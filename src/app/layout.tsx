@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Navbar } from "@/components/Navbar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col font-body selection:bg-accent/30 selection:text-white">
+        <Navbar />
         {children}
       </body>
     </html>

@@ -29,7 +29,7 @@ export function HowItWorksSection() {
   ];
 
   return (
-    <section className="py-24 px-6 overflow-hidden relative">
+    <section id="how-it-works" className="py-24 px-6 overflow-hidden relative">
       {/* Subtle Background Image */}
       <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none mix-blend-screen">
         <Image 
@@ -43,7 +43,7 @@ export function HowItWorksSection() {
 
       <div className="w-full max-w-6xl mx-auto relative z-10">
         <div className="text-center space-y-4 max-w-2xl mx-auto mb-20">
-          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Magical cross-device sync</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Magical cross-device sync</h2>
           <p className="text-text-secondary text-lg">ClipStream runs quietly in the background, making sure your clipboard is always where you need it.</p>
         </div>
 

@@ -6,7 +6,7 @@ import { WaitlistForm } from "./WaitlistForm";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-32 px-6 overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-32 px-6 overflow-hidden">
       {/* Mesh Background */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-accent/20 blur-[120px] animate-pulse duration-[10s]" />
@@ -25,12 +25,25 @@ export function HeroSection() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center space-y-8 max-w-4xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-medium text-accent-secondary mx-auto mb-4">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-              </span>
-              Early Access Open
+            <div className="flex flex-col items-center space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-medium text-accent-secondary mx-auto">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Early Access Open
+              </div>
+
+              <div className="flex items-center -space-x-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="w-8 h-8 rounded-full border-2 border-bg-base bg-bg-surface flex items-center justify-center overflow-hidden">
+                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+                <div className="pl-6 text-sm text-text-muted">
+                  Join <span className="text-white font-bold">2,000+</span> users bridging their devices
+                </div>
+              </div>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1] text-balance">
@@ -48,7 +61,7 @@ export function HeroSection() {
             <div className="pt-6 max-w-md mx-auto w-full">
               <WaitlistForm variant="hero" />
               <p className="mt-4 text-xs text-text-muted">
-                Join 2,000+ people waiting for the bridge. Free during beta.
+                Free during beta. No credit card required.
               </p>
             </div>
           </motion.div>

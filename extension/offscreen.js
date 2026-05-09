@@ -10,40 +10,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.error('Offscreen: Clipboard read failed', error);
         sendResponse({ error: error.name || error.message || 'Unknown Error' });
       });
-    return true;
+    return true; // Keep message channel open for async response
   }
 });
 
 async function readClipboard() {
+  const input = document.getElementById('clipboard-box');
+  
   try {
-    // Attempt 1: Modern Clipboard API
-    // We try to focus a hidden element first, which sometimes helps in extensions
-    const input = document.createElement('textarea');
-    document.body.appendChild(input);
+    // Ensure the element is focused and ready for paste
+    input.value = '';
     input.focus();
+    input.select();
     
-    const text = await navigator.clipboard.readText();
-    
-    document.body.removeChild(input);
-    return text;
-  } catch (error) {
-    console.warn('Modern Clipboard API failed, trying fallback...', error);
-    
-    // Attempt 2: document.execCommand('paste') fallback
-    // This requires a textarea and the document to be 'active' in a specific way
+    // Attempt 1: Modern Clipboard API
     try {
-      const input = document.createElement('textarea');
-      document.body.appendChild(input);
-      input.focus();
-      document.execCommand('paste');
-      const text = input.value;
-      document.body.removeChild(input);
-      
+      const text = await navigator.clipboard.readText();
       if (text) return text;
-      throw new Error('Fallback paste returned no text');
-    } catch (fallbackError) {
-      console.error('Fallback failed too:', fallbackError);
-      throw error; // Throw the original error if fallback also fails
+    } catch (modernError) {
+      console.warn('Modern API failed:', modernError.name || modernError.message);
     }
+    
+    // Attempt 2: Legacy Fallback (execCommand)
+    // This is often more reliable in background contexts if the modern API is blocked
+    input.focus();
+    const success = document.execCommand('paste');
+    const text = input.value;
+    
+    if (success && text) {
+      return text;
+    }
+    
+    // If we get here, both methods failed or the clipboard is just empty
+    throw new Error(text ? 'Paste command failed' : 'Clipboard is empty or inaccessible');
+  } catch (error) {
+    throw error;
   }
 }

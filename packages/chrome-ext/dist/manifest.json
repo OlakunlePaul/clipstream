@@ -1,0 +1,1 @@
+{"manifest_version":3,"name":"ClipStream","version":"1.0.0","description":"Cross-device clipboard sync","permissions":["clipboardRead","clipboardWrite","offscreen","storage","alarms","identity","notifications"],"background":{"service_worker":"src/background/index.js","type":"module"},"action":{"default_popup":"src/popup/index.html"},"icons":{"128":"src/assets/logo-128.png"}}

@@ -196,8 +196,18 @@ async function registerDevice() {
         last_seen: new Date().toISOString()
       }, { onConflict: "id" });
 
-    if (error) console.error("ClipStream: Device registration failed", error);
-    else {
+    if (error) {
+      console.error("ClipStream: Device registration failed", error);
+      if (error.message?.includes("DEVICE_LIMIT_REACHED")) {
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: chrome.runtime.getURL("assets/logo-128.png"),
+          title: "Device Limit Reached",
+          message: "You've reached the free tier limit of 2 devices. Upgrade to Pro for unlimited devices.",
+          priority: 0
+        });
+      }
+    } else {
       lastHeartbeat = now;
       console.log("ClipStream: Device registered/updated");
     }
@@ -224,8 +234,19 @@ async function saveClipToCloud(item: any) {
         source_device: deviceId
       });
 
-    if (error) console.error("ClipStream: Cloud sync failed", error);
-    else {
+    if (error) {
+      console.error("ClipStream: Cloud sync failed", error);
+      if (error.message?.includes("DAILY_LIMIT_REACHED")) {
+        await chrome.storage.local.set({ autoSync: false });
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: chrome.runtime.getURL("assets/logo-128.png"),
+          title: "Daily Limit Reached",
+          message: "You've synced 200 clips today. Auto-sync has been paused. Upgrade to Pro for unlimited syncs.",
+          priority: 0
+        });
+      }
+    } else {
       console.log("ClipStream: Clip synced to cloud");
       
       // Show notification if enabled

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipStream — Landing Page Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0e0f;
+    --bg2: #161819;
+    --bg3: #1e2022;
+    --border: #2a2d30;
+    --border2: #353a3e;
+    --text: #e8eaec;
+    --muted: #7a8490;
+    --accent: #00d68f;
+    --blue: #0099ff;
+    --amber: #f5a623;
+    --purple: #9b7ff4;
+    --red: #ff5f5f;
+    --radius: 10px;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; }
+
+  .layout { display: grid; grid-template-columns: 200px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-logo { padding: 0 18px 20px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .logo-mark { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--accent); }
+  .logo-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-section { padding: 0 10px; margin-bottom: 8px; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--muted); transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(0,214,143,0.08); color: var(--accent); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+  .main { padding: 32px 40px; max-width: 880px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .ph-label { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .ph-title { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 8px; }
+  .ph-desc { font-size: 13px; color: var(--muted); max-width: 600px; line-height: 1.75; margin-bottom: 28px; }
+
+  .sec-head { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin: 24px 0 10px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+  /* Wireframe */
+  .wire { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+  .wire-label { font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--bg3); display: flex; align-items: center; justify-content: space-between; }
+  .wire-label .section-name { color: var(--accent); }
+  .wire-body { padding: 20px; }
+
+  /* Nav wireframe */
+  .wf-nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .wf-logo { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+  .wf-nav-links { display: flex; gap: 16px; }
+  .wf-nav-link { font-size: 11px; color: var(--muted); }
+  .wf-cta-sm { font-size: 11px; background: var(--accent); color: #000; padding: 5px 12px; border-radius: 5px; font-weight: 600; }
+
+  /* Hero wireframe */
+  .wf-hero { text-align: center; padding: 40px 0 32px; }
+  .wf-badge { display: inline-block; font-family: var(--mono); font-size: 10px; border: 1px solid var(--border2); color: var(--muted); padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; }
+  .wf-h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; color: var(--text); margin-bottom: 10px; }
+  .wf-h1 span { color: var(--accent); }
+  .wf-sub { font-size: 15px; color: var(--muted); max-width: 480px; margin: 0 auto 24px; line-height: 1.6; }
+  .wf-form { display: flex; gap: 8px; max-width: 380px; margin: 0 auto 12px; }
+  .wf-input { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: 7px; padding: 9px 14px; font-size: 13px; color: var(--text); font-family: var(--sans); }
+  .wf-btn { background: var(--accent); color: #000; border: none; border-radius: 7px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: var(--sans); }
+  .wf-social { font-size: 11px; color: var(--muted); }
+  .wf-social span { color: var(--accent); }
+
+  /* Terminal mock */
+  .wf-terminal { background: #0a0b0c; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 24px 0 0; text-align: left; font-family: var(--mono); font-size: 12px; }
+  .wf-term-bar { display: flex; gap: 5px; margin-bottom: 12px; }
+  .wf-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-line { margin-bottom: 4px; color: var(--muted); }
+  .term-cmd { color: var(--accent); }
+  .term-out { color: #8aafc8; }
+  .term-dim { color: #3e4a54; }
+
+  /* Section wireframes */
+  .wf-section { padding: 32px 0; }
+  .wf-section-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 6px; }
+  .wf-section-title { font-size: 22px; font-weight: 600; text-align: center; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .wf-section-sub { font-size: 13px; color: var(--muted); text-align: center; max-width: 440px; margin: 0 auto 24px; }
+  .wf-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .wf-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .wf-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .wf-card-icon { font-size: 18px; margin-bottom: 8px; }
+  .wf-card-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .wf-card-body { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* Steps */
+  .wf-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+  .wf-step { padding: 16px; border-right: 1px solid var(--border); }
+  .wf-step:last-child { border-right: none; }
+  .wf-step-num { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-bottom: 8px; }
+  .wf-step-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .wf-step-body { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* Pricing */
+  .wf-pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .wf-price-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .wf-price-card.featured { border-color: var(--accent); }
+  .wf-plan { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .wf-amount { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .wf-amount span { font-size: 13px; font-weight: 400; color: var(--muted); }
+  .wf-price-features { margin-top: 12px; }
+  .wf-pf { font-size: 11px; color: var(--muted); padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .wf-pf:last-child { border-bottom: none; }
+  .wf-pf.yes { color: var(--text); }
+
+  /* Copy section */
+  .copy-block { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .copy-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .copy-section-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); }
+  .copy-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; margin-left: 10px; }
+  .chevron { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(90deg); }
+  .copy-body { display: none; padding: 14px; }
+  .copy-body.open { display: block; }
+  .copy-text { font-family: var(--mono); font-size: 12px; color: #c0cad4; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+  .copy-note { font-size: 11px; color: var(--muted); margin-top: 8px; font-style: italic; border-top: 1px solid var(--border); padding-top: 8px; }
+  .copy-btn { font-size: 11px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border2); background: var(--bg3); color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Prompt */
+  .prompt-box { background: #0a0b0c; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--mono); font-size: 12px; color: #c0cad4; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+  .prompt-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .note { background: rgba(0,153,255,0.05); border-left: 2px solid var(--blue); border-radius: 0 7px 7px 0; padding: 10px 14px; font-size: 12px; color: #8aafcc; line-height: 1.6; margin-top: 10px; }
+  .warn { background: rgba(245,166,35,0.05); border-left: 2px solid var(--amber); border-radius: 0 7px 7px 0; padding: 10px 14px; font-size: 12px; color: #b89050; line-height: 1.6; margin-top: 10px; }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .main { padding: 20px; }
+    .wf-grid-3, .wf-steps, .wf-pricing { grid-template-columns: 1fr; }
+    .wf-grid-2 { grid-template-columns: 1fr; }
+    .wf-step { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">clipstream/</div>
+      <div class="logo-sub">Landing page brief</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Sections</div>
+      <button class="nav-item active" onclick="show('wireframe', this)">
+        <span class="nav-dot" style="background:#00d68f"></span> Wireframe
+      </button>
+      <button class="nav-item" onclick="show('copy', this)">
+        <span class="nav-dot" style="background:#0099ff"></span> Full copy
+      </button>
+      <button class="nav-item" onclick="show('prompt', this)">
+        <span class="nav-dot" style="background:#f5a623"></span> Build prompt
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Design</div>
+      <button class="nav-item" onclick="show('design', this)">
+        <span class="nav-dot" style="background:#9b7ff4"></span> Tokens & rules
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- WIREFRAME -->
+    <div id="wireframe" class="panel active">
+      <div class="ph-label">Landing page · Wireframe</div>
+      <div class="ph-title">Page structure</div>
+      <div class="ph-desc">7 sections. Dark developer aesthetic (Replit profile). IBM Plex Mono for accents, DM Sans for body. Single accent: #00d68f. Every section has one job — don't let it do two.</div>
+
+      <!-- Nav -->
+      <div class="wire">
+        <div class="wire-label"><span>01</span><span class="section-name">nav</span><span>sticky · transparent → solid on scroll</span></div>
+        <div class="wire-body">
+          <div class="wf-nav">
+            <div class="wf-logo">clipstream</div>
+            <div class="wf-nav-links">
+              <span class="wf-nav-link">How it works</span>
+              <span class="wf-nav-link">Pricing</span>
+              <span class="wf-nav-link">Docs</span>
+              <span class="wf-nav-link">GitHub ↗</span>
+            </div>
+            <div class="wf-cta-sm">Join waitlist</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <div class="wire">
+        <div class="wire-label"><span>02</span><span class="section-name">hero</span><span>above the fold · single job: get the email</span></div>
+        <div class="wire-body">
+          <div class="wf-hero">
+            <div class="wf-badge">↳ Early access · 200 lifetime spots at $59</div>
+            <div class="wf-h1">Stop emailing yourself<br><span>API keys.</span></div>
+            <div class="wf-sub">ClipStream syncs your clipboard across Mac, Linux, and Android — end-to-end encrypted, under 50ms. Built for developers who don't live on one OS.</div>
+            <div class="wf-form">
+              <input class="wf-input" placeholder="your@email.com" type="email">
+              <button class="wf-btn">Join waitlist</button>
+            </div>
+            <div class="wf-social"><span>847</span> developers on the waitlist · No spam, ever</div>
+            <div class="wf-terminal">
+              <div class="wf-term-bar">
+                <div class="wf-dot" style="background:#ff5f5f"></div>
+                <div class="wf-dot" style="background:#f5a623"></div>
+                <div class="wf-dot" style="background:#00d68f"></div>
+              </div>
+              <div class="term-line"><span class="term-dim">~/project</span> <span class="term-cmd">$</span> echo "postgres://prod:5432/db" | cs copy</div>
+              <div class="term-line term-out">✓ Copied [CONNECTION_STRING] to ClipStream (3 devices)</div>
+              <div class="term-line" style="margin-top:6px"><span class="term-dim">— phone —</span></div>
+              <div class="term-line term-out">📋 ClipStream · Connection string received from MacBook Pro</div>
+              <div class="term-line" style="color:#00d68f;margin-top:6px"><span class="term-dim">~/project</span> <span class="term-cmd">$</span> <span style="opacity:0.4">_</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social proof bar -->
+      <div class="wire">
+        <div class="wire-label"><span>03</span><span class="section-name">proof bar</span><span>logos + stat · trust signal immediately after hero</span></div>
+        <div class="wire-body" style="padding: 16px 20px;">
+          <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--muted);">Used by developers at</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--muted);opacity:0.5;">Vercel</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--muted);opacity:0.5;">Supabase</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--muted);opacity:0.5;">Linear</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--muted);opacity:0.5;">Stripe</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--muted);opacity:0.5;">Netlify</span>
+            <span style="margin-left:auto; font-size:11px;color:var(--muted);">★★★★★ <span style="color:var(--text)">4.9</span> from 120 beta users</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem -->
+      <div class="wire">
+        <div class="wire-label"><span>04</span><span class="section-name">problem</span><span>3 pain points · no solution mention yet</span></div>
+        <div class="wire-body">
+          <div class="wf-section">
+            <div class="wf-section-label">// the problem</div>
+            <div class="wf-section-title">Your clipboard stops at the OS boundary.</div>
+            <div class="wf-section-sub">Every developer on a mixed stack hits the same wall. The workarounds are embarrassing.</div>
+            <div class="wf-grid-3">
+              <div class="wf-card">
+                <div class="wf-card-icon">🔑</div>
+                <div class="wf-card-title">Emailing API keys to yourself</div>
+                <div class="wf-card-body">You copy a secret from your terminal. You need it on your phone. You open Gmail. You hate yourself a little.</div>
+              </div>
+              <div class="wf-card">
+                <div class="wf-card-icon">📱</div>
+                <div class="wf-card-title">Typing error messages by hand</div>
+                <div class="wf-card-body">Your Android test device shows a stack trace. Your laptop has the debugger. You type it out character by character.</div>
+              </div>
+              <div class="wf-card">
+                <div class="wf-card-icon">💬</div>
+                <div class="wf-card-title">Slack as your clipboard</div>
+                <div class="wf-card-body">You've sent connection strings, env vars, and SSH keys to yourself on Slack. We all have. It's a security incident waiting to happen.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="wire">
+        <div class="wire-label"><span>05</span><span class="section-name">how it works</span><span>3 steps · CLI demo prominent</span></div>
+        <div class="wire-body">
+          <div class="wf-section">
+            <div class="wf-section-label">// how it works</div>
+            <div class="wf-section-title">Copy on any device.<br>Paste on all of them.</div>
+            <div class="wf-section-sub">Works from the terminal, editor, browser, and phone. E2E encrypted — ClipStream never sees your clipboard contents.</div>
+            <div class="wf-steps">
+              <div class="wf-step">
+                <div class="wf-step-num">01 / install</div>
+                <div class="wf-step-title">One command setup</div>
+                <div class="wf-step-body" style="font-family:var(--mono);font-size:10px;margin-top:8px;background:var(--bg);padding:8px;border-radius:5px;color:var(--accent)">npm install -g clipstream-cli</div>
+                <div class="wf-step-body" style="margin-top:8px">Plus the Chrome extension and Android app. Sign in once with Google — all devices connected automatically.</div>
+              </div>
+              <div class="wf-step">
+                <div class="wf-step-num">02 / copy</div>
+                <div class="wf-step-title">Copy from anywhere</div>
+                <div class="wf-step-body" style="font-family:var(--mono);font-size:10px;margin-top:8px;background:var(--bg);padding:8px;border-radius:5px;color:var(--accent)">echo $DB_URL | cs copy</div>
+                <div class="wf-step-body" style="margin-top:8px">Terminal, VS Code, Chrome, or Android. ClipStream detects what you copied — code, URL, command, or secret — and labels it.</div>
+              </div>
+              <div class="wf-step">
+                <div class="wf-step-num">03 / paste</div>
+                <div class="wf-step-title">Paste anywhere else</div>
+                <div class="wf-step-body" style="font-family:var(--mono);font-size:10px;margin-top:8px;background:var(--bg);padding:8px;border-radius:5px;color:var(--accent)">cs paste | pbcopy</div>
+                <div class="wf-step-body" style="margin-top:8px">On your phone it appears as a notification. In VS Code, Cmd+Shift+V opens your full history. In the terminal, cs paste pipes it anywhere.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div class="wire">
+        <div class="wire-label"><span>06</span><span class="section-name">features</span><span>developer-specific differentiators</span></div>
+        <div class="wire-body">
+          <div class="wf-section">
+            <div class="wf-section-label">// features</div>
+            <div class="wf-section-title">Built for the cross-platform developer stack.</div>
+            <div class="wf-section-sub">Not a general clipboard tool with a developer skin. Every feature exists because of a real developer workflow problem.</div>
+            <div class="wf-grid-2">
+              <div class="wf-card"><div class="wf-card-title">🔒 Zero-knowledge encryption</div><div class="wf-card-body">Keys generated on your device. Never transmitted. ClipStream's servers only see encrypted bytes — not your clipboard contents. Ever.</div></div>
+              <div class="wf-card"><div class="wf-card-title">⚡ Under 50ms local sync</div><div class="wf-card-body">When devices are on the same network, ClipStream syncs directly — not through a cloud relay. Faster than you can switch windows.</div></div>
+              <div class="wf-card"><div class="wf-card-title">🧠 Content-aware detection</div><div class="wf-card-body">Knows the difference between a URL, a terminal command, a code snippet, and an API key. API keys show masked by default — in history and notifications.</div></div>
+              <div class="wf-card"><div class="wf-card-title">💻 VS Code integration</div><div class="wf-card-body">Cmd+Shift+V opens your clipboard history inside the editor. Paste anything from any device without switching tabs.</div></div>
+              <div class="wf-card"><div class="wf-card-title">📟 Terminal-native CLI</div><div class="wf-card-body">cs copy and cs paste work in any shell. Pipe-friendly. Shell completion for bash and zsh. Feels like a real Unix tool because it is one.</div></div>
+              <div class="wf-card"><div class="wf-card-title">📋 90-day history</div><div class="wf-card-body">Every sync is saved and searchable. Find that connection string from last Tuesday. History is encrypted and stored per-device — never in plaintext on our servers.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="wire">
+        <div class="wire-label"><span>07</span><span class="section-name">pricing</span><span>3 tiers · annual default · lifetime prominent</span></div>
+        <div class="wire-body">
+          <div class="wf-section">
+            <div class="wf-section-label">// pricing</div>
+            <div class="wf-section-title">Transparent pricing.<br>No "contact sales."</div>
+            <div class="wf-section-sub">Pay for what you use. Upgrade or cancel any time.</div>
+            <div style="display:flex;justify-content:center;gap:8px;margin-bottom:20px;">
+              <span style="font-size:12px;color:var(--muted)">Monthly</span>
+              <span style="font-size:12px;background:rgba(0,214,143,0.12);color:var(--accent);padding:2px 8px;border-radius:4px;">Annual · save 33%</span>
+            </div>
+            <div class="wf-pricing">
+              <div class="wf-price-card">
+                <div class="wf-plan">Free</div>
+                <div class="wf-amount">$0</div>
+                <div class="wf-price-features">
+                  <div class="wf-pf yes">50 syncs / day</div>
+                  <div class="wf-pf yes">3 devices</div>
+                  <div class="wf-pf yes">7-day history</div>
+                  <div class="wf-pf">Cloud sync only</div>
+                  <div class="wf-pf">No CLI / VS Code</div>
+                </div>
+                <button style="width:100%;margin-top:14px;padding:8px;border:1px solid var(--border2);background:none;color:var(--text);border-radius:6px;cursor:pointer;font-size:12px;">Get started free</button>
+              </div>
+              <div class="wf-price-card featured">
+                <div style="font-size:10px;background:var(--accent);color:#000;display:inline-block;padding:1px 7px;border-radius:3px;margin-bottom:6px;font-weight:600;">MOST POPULAR</div>
+                <div class="wf-plan">Pro</div>
+                <div class="wf-amount">$6<span>/mo</span></div>
+                <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">billed $72/year · or $9/month</div>
+                <div class="wf-price-features">
+                  <div class="wf-pf yes">Unlimited syncs</div>
+                  <div class="wf-pf yes">10 devices</div>
+                  <div class="wf-pf yes">90-day history</div>
+                  <div class="wf-pf yes">Local network sync (&lt;50ms)</div>
+                  <div class="wf-pf yes">CLI + VS Code extension</div>
+                </div>
+                <button class="wf-btn" style="width:100%;margin-top:14px;padding:8px;font-size:12px;">Get Pro — $72/year</button>
+              </div>
+              <div class="wf-price-card">
+                <div class="wf-plan">Lifetime · Early access</div>
+                <div class="wf-amount">$59<span> once</span></div>
+                <div style="font-size:10px;color:var(--red);margin-bottom:8px;">⚡ 47 of 200 spots left</div>
+                <div class="wf-price-features">
+                  <div class="wf-pf yes">Everything in Pro</div>
+                  <div class="wf-pf yes">All future updates</div>
+                  <div class="wf-pf yes">Founding user badge</div>
+                  <div class="wf-pf yes">Direct Discord access</div>
+                </div>
+                <button style="width:100%;margin-top:14px;padding:8px;border:1px solid var(--accent);background:none;color:var(--accent);border-radius:6px;cursor:pointer;font-size:12px;">Claim lifetime access</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer CTA -->
+      <div class="wire">
+        <div class="wire-label"><span>08</span><span class="section-name">footer CTA</span><span>final push · repeat the hook</span></div>
+        <div class="wire-body" style="text-align:center;padding:32px 20px;">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:8px;">// get early access</div>
+          <div style="font-size:20px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px;">Your clipboard. Every device. Zero trust.</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Join 847 developers who are done with the workarounds.</div>
+          <div class="wf-form" style="margin:0 auto;">
+            <input class="wf-input" placeholder="your@email.com" type="email">
+            <button class="wf-btn">Join waitlist</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COPY -->
+    <div id="copy" class="panel">
+      <div class="ph-label">Landing page · Copy</div>
+      <div class="ph-title">Full copy — all sections</div>
+      <div class="ph-desc">Every word written for a developer who has a high BS detector, reads fast, and decides by doing — not reading. No fluff. No "seamless." No "effortless."</div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">01</span>
+          <span class="copy-title">Nav</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">Logo: clipstream
+
+Links: How it works · Pricing · Docs · GitHub ↗
+
+CTA button: Join waitlist</div>
+        </div>
+      </div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">02</span>
+          <span class="copy-title">Hero</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">BADGE:
+↳ Early access · 200 lifetime spots at $59
+
+HEADLINE (h1):
+Stop emailing yourself
+API keys.
+
+SUBHEADLINE:
+ClipStream syncs your clipboard across Mac, Linux, and Android — end-to-end encrypted, under 50ms on local network. Built for developers who don't live on one OS.
+
+FORM PLACEHOLDER: your@email.com
+
+CTA BUTTON: Join waitlist →
+
+BELOW FORM:
+[847 developers on the waitlist] · No spam, ever.
+(Update the count live from Supabase)
+
+TERMINAL DEMO COPY:
+~/project $ echo "postgres://prod:5432/db" | cs copy
+✓ Copied [CONNECTION_STRING] to ClipStream (3 devices)
+
+— 1.2 seconds later, on Android —
+📋 ClipStream · Connection string received from MacBook Pro
+[Tap to copy]</div>
+          <div class="copy-note">The headline is deliberately abrupt. Don't soften it. The discomfort of recognition is the hook. "API keys" in green makes the technical signal unmissable.</div>
+        </div>
+      </div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">03</span>
+          <span class="copy-title">Social proof bar</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">Used by developers at
+[Vercel] [Supabase] [Linear] [Stripe] [Netlify]
+
+★★★★★ 4.9 from 120 beta users</div>
+          <div class="copy-note">Replace with real companies from your waitlist once you have them. Don't fake this. If you don't have recognisable companies yet, use "Used by 847 developers across 40+ countries" instead.</div>
+        </div>
+      </div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">04</span>
+          <span class="copy-title">Problem section</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">// the problem
+
+SECTION TITLE:
+Your clipboard stops at the OS boundary.
+
+SUBTITLE:
+Every developer on a mixed stack hits the same wall.
+The workarounds are embarrassing.
+
+PAIN POINT 1 — Emailing API keys to yourself
+You copy a secret from your terminal. You need it on your phone.
+You open Gmail. You type it in the subject line because it's faster.
+You send it to yourself. You hate yourself a little.
+You do it again tomorrow.
+
+PAIN POINT 2 — Typing error messages by hand
+Your Android test device shows a stack trace at line 847.
+Your laptop has the debugger open.
+You squint at the phone. You type it out.
+Character. By. Character.
+
+PAIN POINT 3 — Slack as your clipboard
+You've sent connection strings, env vars, SSH keys,
+and JWT tokens to yourself on Slack.
+We all have.
+Every one of those messages is sitting in Slack's servers right now.
+That's a security incident waiting to happen.</div>
+          <div class="copy-note">The repetitive cadence in each pain point is intentional — "You do X. Then Y. Then you hate yourself." It mirrors internal monologue. Don't edit it into standard marketing copy.</div>
+        </div>
+      </div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">05</span>
+          <span class="copy-title">How it works</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">// how it works
+
+SECTION TITLE:
+Copy on any device.
+Paste on all of them.
+
+SUBTITLE:
+Works from the terminal, editor, browser, and phone.
+ClipStream never sees your clipboard contents — only encrypted bytes.
+
+STEP 1 — 01 / install
+One command setup
+npm install -g clipstream-cli
+
+Install the Chrome extension and Android app.
+Sign in once with Google. All devices linked automatically.
+No pairing codes. No QR scanning. Just works.
+
+STEP 2 — 02 / copy
+Copy from anywhere
+echo $DB_URL | cs copy           ← terminal
+Cmd+C                            ← browser / VS Code
+[Send] button                    ← Android app
+
+ClipStream detects what you copied:
+CODE · COMMAND · URL · API_KEY · FILE_PATH · ERROR_TRACE
+API keys are masked automatically — in history and in notifications.
+
+STEP 3 — 03 / paste
+Paste anywhere else
+cs paste | pbcopy                ← pipe to macOS clipboard
+Cmd+Shift+V                      ← VS Code history picker
+📋 notification on Android       ← one tap to copy
+
+Local network? Under 50ms.
+Cloud fallback? Still faster than your current workaround.</div>
+        </div>
+      </div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">06</span>
+          <span class="copy-title">Features</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">// features
+
+SECTION TITLE:
+Built for the cross-platform developer stack.
+
+SUBTITLE:
+Not a general clipboard tool with a developer skin.
+Every feature exists because of a real workflow problem.
+
+FEATURE 1 — Zero-knowledge encryption
+Your keys. Your device. Full stop.
+Encryption keys are generated on your device and never transmitted.
+ClipStream's servers only ever see encrypted bytes.
+Not your connection strings. Not your API keys. Not your code.
+Open-source encryption library (tweetnacl). Auditable.
+
+FEATURE 2 — Under 50ms local sync
+Faster than cloud. Because it's not cloud.
+When your devices are on the same network, ClipStream syncs peer-to-peer.
+No cloud hop. No relay latency. Just: copy, paste, done.
+Cloud fallback when you're not on the same network — still faster than emailing yourself.
+
+FEATURE 3 — Content-aware detection
+It knows what you copied.
+CODE · COMMAND · URL · API_KEY · FILE_PATH · ERROR_TRACE
+API keys are masked in your history (sk-••••••••••••••••f3a9) and never appear in notification banners. You see what you need, nothing gets exposed.
+
+FEATURE 4 — VS Code integration
+Paste from history without leaving your editor.
+Cmd+Shift+V opens a searchable history picker inside VS Code.
+Every clip from every device, right where you're already working.
+
+FEATURE 5 — Terminal-native CLI
+cs copy and cs paste. That's it.
+Pipe-friendly: echo $SECRET | cs copy, cs paste | pbcopy
+Shell completion for bash and zsh.
+Works on macOS, Linux, and Windows.
+
+FEATURE 6 — 90-day history
+That connection string from Tuesday? Still there.
+Encrypted, searchable, and stored per-device.
+Never in plaintext on our servers.
+Pro users keep 90 days. Free users keep 7.</div>
+        </div>
+      </div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">07</span>
+          <span class="copy-title">Pricing</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">// pricing
+
+SECTION TITLE:
+Transparent pricing.
+No "contact sales."
+
+SUBTITLE:
+Pay for what you use. Upgrade or cancel any time.
+We'll never hide limits in the fine print.
+
+BILLING TOGGLE: [Monthly] [Annual · save 33%]
+
+TIER 1 — Free
+$0 / month
+- 50 syncs per day
+- 3 devices
+- 7-day history
+- Cloud sync only
+- Text only
+CTA: Get started free
+
+TIER 2 — Pro (MOST POPULAR badge)
+$6 / month (billed $72/year)
+or $9/month billed monthly
+- Unlimited syncs
+- 10 devices
+- 90-day history, searchable
+- Local network sync (<50ms)
+- CLI + VS Code extension
+- Images + formatted text
+- Priority support
+CTA: Get Pro — $72/year
+
+TIER 3 — Lifetime (Early access)
+$59 once
+⚡ 47 of 200 spots remaining
+- Everything in Pro
+- All future updates included
+- Founding user badge in Discord
+- Direct access to the roadmap
+- Price locks forever
+CTA: Claim lifetime access
+
+BELOW PRICING:
+Questions? Read the FAQ or email founders@clipstream.dev
+We reply within 24 hours. No sales team — just the people who built it.
+
+FAQ ITEMS:
+Q: Is the encryption really zero-knowledge?
+A: Yes. Your private keys are generated locally and never leave your device.
+   We can't read your clipboard even if we wanted to.
+   The shared-crypto package is open source — you can verify this yourself.
+
+Q: What happens when devices aren't on the same network?
+A: ClipStream falls back to our encrypted cloud relay automatically.
+   Still end-to-end encrypted. Typically 100–300ms depending on location.
+
+Q: Does it work on Linux?
+A: Yes — the CLI works on any Linux distro. Chrome extension on any Chromium browser.
+   Linux desktop app (Electron) is coming in Phase 2.
+
+Q: Can I self-host it?
+A: Not yet. On the roadmap for Enterprise. The encryption architecture is designed for it.</div>
+          <div class="copy-note">Show annual pricing by default. "billed $72/year" is clearer than "$6/month." The lifetime tier's scarcity counter must be real — update it live from your pre-sales data.</div>
+        </div>
+      </div>
+
+      <div class="copy-block">
+        <div class="copy-head" onclick="toggleCopy(this)">
+          <span class="copy-section-tag">08</span>
+          <span class="copy-title">Footer CTA</span>
+          <button class="copy-btn" onclick="event.stopPropagation();cpBlock(this)">Copy</button>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="copy-body">
+          <div class="copy-text">// get early access
+
+SECTION TITLE:
+Your clipboard. Every device.
+Zero trust.
+
+SUBTITLE:
+Join 847 developers who are done with the workarounds.
+
+FORM: [your@email.com] [Join waitlist →]
+
+BELOW FORM:
+No credit card. No spam. Unsubscribe any time.
+
+FOOTER LINKS:
+Docs · GitHub · Privacy · Security · Twitter / X · Discord
+
+FOOTER TAGLINE:
+Built by developers, for developers.
+Open-source encryption. Transparent pricing. No VC pressure.
+
+COPYRIGHT:
+© 2026 ClipStream Inc.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROMPT -->
+    <div id="prompt" class="panel">
+      <div class="ph-label">Landing page · Build prompt</div>
+      <div class="ph-title">The full build prompt</div>
+      <div class="ph-desc">Drop this directly into Claude Code, Cursor, or a coding session. Everything needed to build the complete landing page from scratch — stack, design system, components, interactions, and backend API.</div>
+
+      <div class="sec-head">Full prompt</div>
+      <div class="prompt-box">Build the ClipStream landing page. Stack: Next.js 14 App Router, TypeScript, Tailwind CSS, deployed to Vercel.
+
+━━━ DESIGN SYSTEM ━━━
+Profile: Dark developer tool (Replit-style). No gradients. No glassmorphism. Purposeful and precise.
+
+Fonts (Google Fonts):
+- Display/mono: IBM Plex Mono (weights 400, 500, 600)
+- Body: DM Sans (weights 400, 500, 600)
+- font-display: swap on both
+
+CSS custom properties (globals.css):
+--bg: #0d0e0f
+--bg2: #161819
+--bg3: #1e2022
+--border: #2a2d30
+--border2: #353a3e
+--text: #e8eaec
+--muted: #7a8490
+--accent: #00d68f    ← the ONLY colour accent
+--radius: 10px
+--mono: 'IBM Plex Mono', monospace
+--sans: 'DM Sans', system-ui, sans-serif
+
+Motion: Level 1 only — CSS transitions, no JS animation libraries.
+transition: color 150ms ease, background 150ms ease, transform 200ms ease, opacity 200ms ease;
+
+Reduced motion: wrap all transitions in @media (prefers-reduced-motion: no-preference).
+Mobile-first: base at 320px, scale up with min-width breakpoints (480, 768, 1024, 1280).
+
+━━━ FILE STRUCTURE ━━━
+app/
+  layout.tsx          — metadata, fonts, analytics
+  page.tsx            — assembles all sections
+  globals.css         — CSS vars, resets, base styles
+  api/
+    waitlist/route.ts — POST handler (Supabase + Resend)
+
+components/
+  Nav.tsx
+  Hero.tsx
+  ProofBar.tsx
+  Problem.tsx
+  HowItWorks.tsx
+  Features.tsx
+  Pricing.tsx
+  FooterCTA.tsx
+  Footer.tsx
+  TerminalDemo.tsx    — animated terminal mock
+  BillingToggle.tsx   — monthly/annual switcher
+
+━━━ SECTION SPECS ━━━
+
+NAV (Nav.tsx):
+- Sticky. Transparent at top → bg2 + border-bottom on scroll (IntersectionObserver on hero).
+- Logo: "clipstream" in IBM Plex Mono, accent colour.
+- Links: How it works · Pricing · Docs · GitHub ↗ (smooth scroll to section IDs)
+- CTA button: "Join waitlist" → smooth scrolls to #waitlist input and focuses it.
+- Mobile: hamburger menu, full-screen overlay nav.
+
+HERO (Hero.tsx + TerminalDemo.tsx):
+- Early access badge: pill with border, monospace text "↳ Early access · 200 lifetime spots at $59"
+- h1: "Stop emailing yourself" (line break) "API keys." — "API keys." in --accent colour.
+  Font: IBM Plex Mono, clamp(32px, 6vw, 64px), weight 600, letter-spacing -0.03em.
+- Subheadline: DM Sans, 16–18px, --muted colour, max-width 520px.
+- Email form: flex row on desktop, stacked on mobile.
+  Input: bg3, border border2, focus ring in accent colour.
+  Button: bg accent, text #000, font-weight 600.
+  On submit: POST to /api/waitlist. Loading state on button. Success: replace form with
+  "✓ You're on the list. We'll email you when ClipStream launches."
+  Error: inline message below input.
+- Social proof line: "847 developers on the waitlist" — fetch count from Supabase on load.
+  Update in real time is NOT needed — just fetch on page load, cache 60s.
+- TerminalDemo: dark terminal window with macOS traffic light dots (decorative, no function).
+  Three lines of copy-paste demo, typewriter effect on mount (CSS animation, not JS).
+  Lines: command → success output → phone notification.
+  Accent colour for $ prompt and success checkmark. Muted for comments.
+
+PROOF BAR (ProofBar.tsx):
+- Single row: "Used by developers at" + 5 company name text labels (monospace, 50% opacity).
+- Right side: star rating "★★★★★ 4.9 from 120 beta users"
+- border-top and border-bottom in --border.
+
+PROBLEM (Problem.tsx):
+- Section label: "// the problem" in monospace, --accent.
+- h2: "Your clipboard stops at the OS boundary."
+- 3 cards in CSS grid (3-col desktop, 1-col mobile).
+  Each card: bg3, border, border-radius. Icon (emoji), title, body copy.
+  Hover: border-color transitions to --border2, translateY(-2px).
+
+HOW IT WORKS (HowItWorks.tsx):
+- Section label: "// how it works"
+- h2: "Copy on any device. Paste on all of them."
+- 3-column step layout with vertical dividers between.
+  Each step: step number in monospace accent, title, inline code block (bg, accent text), body copy.
+  Mobile: stacked, horizontal dividers.
+
+FEATURES (Features.tsx):
+- Section label: "// features"
+- h2: "Built for the cross-platform developer stack."
+- 2-col grid of 6 feature cards. Each: title with emoji, body copy.
+  Hover: same card lift as Problem section.
+
+PRICING (Pricing.tsx + BillingToggle.tsx):
+- Section label: "// pricing"
+- Billing toggle: [Monthly] [Annual · save 33%] — pill switcher. Annual selected by default.
+  Toggle updates prices with CSS transition (opacity fade + translateY).
+- 3-column card grid:
+  Card 1 (Free): standard card.
+  Card 2 (Pro): border-color --accent, "MOST POPULAR" badge in accent bg, #000 text.
+  Card 3 (Lifetime): border-color --border2, red scarcity counter "⚡ 47 of 200 spots left"
+    (fetch remaining count from Supabase on load).
+- Monthly prices: $0, $9/mo, $59 once.
+- Annual prices: $0, $6/mo (billed $72/year), $59 once (unchanged).
+- Each card: plan name, price, billing note, feature list, CTA button.
+- Below cards: FAQ accordion — 4 items, CSS-only expand/collapse.
+
+FOOTER CTA (FooterCTA.tsx):
+- Repeat email form (same /api/waitlist endpoint, same states).
+- Dark section, centered layout.
+
+FOOTER (Footer.tsx):
+- Two rows: links left, tagline right. Copyright below.
+- Links: Docs · GitHub · Privacy · Security · Twitter/X · Discord
+
+━━━ API ROUTE ━━━
+app/api/waitlist/route.ts:
+
+POST handler:
+1. Validate email (zod — email schema, trim, lowercase)
+2. Check Supabase for existing email in waitlist table — return 200 with {alreadySubscribed: true} if exists
+3. Insert into Supabase: waitlist(id, email, created_at, source) — source = 'landing'
+4. Send welcome email via Resend:
+   From: hello@clipstream.dev
+   Subject: "You're on the ClipStream waitlist"
+   Body: plain text, conversational — "Hey — you're in. We're building ClipStream for developers
+   who are tired of emailing themselves API keys. We'll email you when we're ready for beta.
+   In the meantime, follow along on GitHub: [link] — the founders"
+5. Return {success: true, count: totalWaitlistCount}
+
+ENV vars needed: SUPABASE_URL, SUPABASE_ANON_KEY, RESEND_API_KEY
+
+━━━ SEO + META ━━━
+app/layout.tsx metadata:
+title: "ClipStream — Clipboard sync for developers"
+description: "End-to-end encrypted clipboard sync across Mac, Linux, and Android. Built for developers who don't live on one OS. Under 50ms on local network."
+og:image: generate a simple dark card with the headline (can be a static /og.png for now)
+canonical: https://clipstream.dev
+twitter:card: summary_large_image
+
+━━━ QUALITY CHECKLIST ━━━
+Before shipping:
+- [ ] All buttons have touch-action: manipulation (no 300ms delay)
+- [ ] All tap targets min 44×44px
+- [ ] Focus states visible on all interactive elements (outline: 2px solid var(--accent))
+- [ ] Form has proper label (visually hidden ok), aria-describedby on error state
+- [ ] Pricing toggle keyboard navigable (arrow keys or tab+enter)
+- [ ] FAQ accordion uses button elements, aria-expanded, aria-controls
+- [ ] No layout shift on font load (font-display: swap + explicit size)
+- [ ] Waitlist count shown as "847+" if Supabase fetch fails (fallback)
+- [ ] All transitions wrapped in prefers-reduced-motion media query</div>
+
+      <div class="prompt-actions">
+        <button class="copy-btn" style="padding:6px 14px;font-size:12px;" onclick="cpPrompt(this)">Copy full prompt</button>
+      </div>
+
+      <div class="note">This prompt is designed for Claude Code or Cursor with Next.js context. Run it in a fresh Next.js 14 project with Tailwind already configured. The component breakdown means you can build and test each section independently before assembling.</div>
+      <div class="warn">Before running: create the Supabase waitlist table (id uuid, email text unique, created_at timestamptz, source text) and add the three ENV vars to .env.local. The prompt won't build the Supabase schema — do that first.</div>
+    </div>
+
+    <!-- DESIGN TOKENS -->
+    <div id="design" class="panel">
+      <div class="ph-label">Landing page · Design</div>
+      <div class="ph-title">Tokens & rules</div>
+      <div class="ph-desc">The design decisions that make this feel like a developer tool, not a startup template. Every rule has a reason.</div>
+
+      <div class="sec-head">Typography</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Display / accent</div>
+          <div style="font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);">IBM Plex Mono</div>
+          <div style="font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:4px;">Headlines · Code · Labels · Nav logo</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;opacity:0.6;">Weights: 400 · 500 · 600</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Body</div>
+          <div style="font-family:var(--sans);font-size:22px;font-weight:600;color:var(--text);">DM Sans</div>
+          <div style="font-family:var(--sans);font-size:13px;color:var(--muted);margin-top:4px;">Body copy · Buttons · Form labels</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;opacity:0.6;">Weights: 400 · 500 · 600</div>
+        </div>
+      </div>
+
+      <div class="sec-head">Colour palette</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:24px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);">--bg</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text);">#0d0e0f</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Page background</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);">--bg2</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text);">#161819</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Cards · Nav</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);">--bg3</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text);">#1e2022</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Input · Hover</div>
+        </div>
+        <div style="background:var(--accent);border-radius:8px;padding:12px;">
+          <div style="font-family:var(--mono);font-size:10px;color:#000;">--accent</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#000;">#00d68f</div>
+          <div style="font-size:11px;color:#000;margin-top:4px;">The one accent</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);">--text</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text);">#e8eaec</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Primary text</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);">--muted</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">#7a8490</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Secondary text</div>
+        </div>
+      </div>
+
+      <div class="sec-head">Copy rules</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:rgba(255,95,95,0.05);border:1px solid rgba(255,95,95,0.2);border-radius:var(--radius);padding:14px;">
+          <div style="font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Never write</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+            "seamlessly" or "effortless"<br>
+            "powerful" without a spec<br>
+            "intuitive" (they all say this)<br>
+            "cutting-edge" or "next-gen"<br>
+            "leverage" as a verb<br>
+            "solution" for a specific tool<br>
+            Any sentence starting with "We believe"
+          </div>
+        </div>
+        <div style="background:rgba(0,214,143,0.05);border:1px solid rgba(0,214,143,0.2);border-radius:var(--radius);padding:14px;">
+          <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Always write</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+            Specific numbers ("under 50ms", "90-day")<br>
+            Second person ("you", "your")<br>
+            What it does before what it is<br>
+            The uncomfortable truth ("emailing API keys")<br>
+            Short sentences. Then shorter.<br>
+            Tech terms without apologising for them<br>
+            What it doesn't do (builds trust)
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleCopy(head) {
+  const body = head.nextElementSibling;
+  const chev = head.querySelector('.chevron');
+  const open = body.classList.toggle('open');
+  chev.classList.toggle('open', open);
+}
+function cpBlock(btn) {
+  const block = btn.closest('.copy-block');
+  const text = block.querySelector('.copy-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+function cpPrompt(btn) {
+  const text = document.querySelector('.prompt-box').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = 'Copy full prompt', 1800);
+  });
+}
+</script>
+</body>
+</html>

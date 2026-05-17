@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Laptop, Smartphone, Monitor, Globe, MoreVertical, RefreshCw } from "lucide-react";
+import { Laptop, Smartphone, Monitor, Globe, MoreVertical, RefreshCw, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 interface Device {
@@ -31,6 +31,16 @@ export function DevicesTab() {
       console.error("Failed to fetch devices:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from("devices").delete().eq("id", id);
+      if (error) throw error;
+      setDevices(prev => prev.filter(d => d.id !== id));
+    } catch (error) {
+      console.error("Failed to delete device", error);
     }
   };
 
@@ -81,9 +91,19 @@ export function DevicesTab() {
                   </p>
                 </div>
 
-                <button className="p-1 text-gray-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
+                {isCurrent ? (
+                  <button className="p-1 text-gray-600 cursor-not-allowed opacity-0 group-hover:opacity-50" title="This is your current device">
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleDelete(device.id)}
+                    className="p-1 text-gray-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    title="Remove device"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             );
           })

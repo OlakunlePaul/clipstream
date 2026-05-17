@@ -17,17 +17,19 @@ export function SettingsTab({ session }: { session: Session }) {
 
     // 2. Fetch real daily syncs from Supabase
     const fetchSyncs = async () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const dateStr = new Date().toISOString().split('T')[0];
       
-      const { count, error } = await supabase
-        .from("clips")
-        .select("*", { count: "exact", head: true })
+      const { data, error } = await supabase
+        .from("usage_stats")
+        .select("sync_count")
         .eq("user_id", session.user.id)
-        .gte("created_at", today.toISOString());
+        .eq("date", dateStr)
+        .single();
 
-      if (!error && count !== null) {
-        setDailySyncs(count);
+      if (!error && data) {
+        setDailySyncs(data.sync_count);
+      } else {
+        setDailySyncs(0);
       }
     };
 

@@ -12,14 +12,24 @@
     "identity",
     "notifications"
   ],
+  "host_permissions": [
+    "https://byzefnigowfpdmpmatnl.supabase.co/*"
+  ],
   "background": {
-    "service_worker": "src/background/index.ts",
+    "service_worker": "background/index.ts",
     "type": "module"
   },
   "action": {
-    "default_popup": "src/popup/index.html"
+    "default_popup": "popup/index.html"
   },
   "icons": {
-    "128": "src/assets/logo-128.png"
+    "128": "assets/logo-128.png"
+  },
+  "oauth2": {
+    "client_id": "569295257974-gpv2de8dklb8i0gqrvfreisail2ulquk.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
   }
 }

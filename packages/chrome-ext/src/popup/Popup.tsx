@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Session } from "../lib/supabase";
+import { Session, supabase } from "../lib/supabase";
 import { History, Laptop, Settings, RefreshCw } from "lucide-react";
 import { HistoryTab } from "@/popup/HistoryTab";
 import { DevicesTab } from "@/popup/DevicesTab";
@@ -14,10 +14,21 @@ export function Popup() {
   const [activeTab, setActiveTab] = useState<Tab>("history");
 
   useEffect(() => {
-    chrome.runtime.sendMessage({ type: "GET_SESSION" }, (response: Session | null) => {
-      setSession(response);
+    // 1. Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setLoading(false);
     });
+
+    // 2. Listen for auth changes (shared via storage adapter)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
@@ -77,8 +88,12 @@ export function Popup() {
 
 function SignInView({ onSignIn }: { onSignIn: () => void }) {
   const handleSignIn = () => {
-    chrome.identity.getAuthToken({ interactive: true }, () => {
-      setTimeout(onSignIn, 1000);
+    chrome.runtime.sendMessage({ type: "SIGN_IN" }, (response) => {
+      if (response?.success) {
+        window.location.reload();
+      } else {
+        console.error("Sign in failed:", response?.error);
+      }
     });
   };
 

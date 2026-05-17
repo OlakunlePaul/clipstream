@@ -14,19 +14,19 @@ async function readClipboard(): Promise<string> {
   const input = document.getElementById("clipboard-box") as HTMLTextAreaElement;
   
   try {
-    // 1. Try Modern API
-    input.focus();
-    const text = await navigator.clipboard.readText();
-    if (text) return text;
-    
-    // 2. Fallback to execCommand if modern API returns empty or fails
     input.value = "";
     input.focus();
-    const success = document.execCommand("paste");
-    if (success && input.value) return input.value;
+    input.select();
     
-    throw new Error("Clipboard is empty or inaccessible");
+    // execCommand('paste') is more reliable in offscreen documents
+    const success = document.execCommand("paste");
+    
+    if (success && input.value) {
+      return input.value;
+    }
+    return "";
   } catch (error) {
+    console.error("Offscreen clipboard error:", error);
     throw error;
   }
 }

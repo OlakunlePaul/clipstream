@@ -9,10 +9,13 @@ function makeManifest() {
 }
 
 export default defineConfig({
+  root: "src", // Set root to src so paths in manifest are relative to it
+  envDir: "../",
   plugins: [
     react(),
     webExtension({
       manifest: makeManifest,
+      additionalInputs: ["offscreen/index.html"],
     }),
   ],
   resolve: {
@@ -21,7 +24,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "dist",
+    outDir: "../dist", // Build out to packages/chrome-ext/dist
     emptyOutDir: true,
   },
 });

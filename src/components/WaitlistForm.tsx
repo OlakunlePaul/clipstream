@@ -1,11 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { FaGoogle } from "react-icons/fa";
+import { supabase } from "@/lib/supabase";
+import { useSearchParams } from "next/navigation";
 
-export function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" }) {
+function WaitlistFormInner({ variant = "default" }: { variant?: "default" | "hero" }) {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (searchParams && searchParams.get("status") === "success") {
+      setStatus("success");
+    }
+  }, [searchParams]);
+
+  const handleGoogleLogin = async () => {
+    setStatus("loading");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setStatus("error");
+      setErrorMessage(error.message);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +80,8 @@ export function WaitlistForm({ variant = "default" }: { variant?: "default" | "h
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+    <div className="w-full max-w-md mx-auto space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:row gap-3">
         <div className="relative flex-1">
           <label htmlFor={`email-${variant}`} className="sr-only">Email address</label>
           <input
@@ -73,7 +98,7 @@ export function WaitlistForm({ variant = "default" }: { variant?: "default" | "h
         <button
           type="submit"
           disabled={status === "loading" || !email}
-          className="glow-btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+          className="glow-btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3"
         >
           {status === "loading" ? (
             <span className="flex items-center gap-2">
@@ -86,18 +111,44 @@ export function WaitlistForm({ variant = "default" }: { variant?: "default" | "h
           ) : "Join Waitlist"}
         </button>
       </form>
+
+      <div className="relative py-2">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-white/10"></div>
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-transparent px-2 text-text-muted">Or</span>
+        </div>
+      </div>
+
+      <button
+        onClick={handleGoogleLogin}
+        disabled={status === "loading"}
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-md bg-white text-gray-900 font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50"
+      >
+        <FaGoogle className="text-red-500" />
+        Join with Google
+      </button>
       
       {status === "duplicate" && (
-        <p className="mt-3 text-sm text-accent-secondary animate-in slide-in-from-top-1 duration-200">
+        <p className="mt-3 text-sm text-accent-secondary animate-in slide-in-from-top-1 duration-200 text-center">
           You&apos;re already on the waitlist! We&apos;ll be in touch.
         </p>
       )}
       
       {status === "error" && (
-        <p className="mt-3 text-sm text-red-400 animate-in slide-in-from-top-1 duration-200">
+        <p className="mt-3 text-sm text-red-400 animate-in slide-in-from-top-1 duration-200 text-center">
           {errorMessage}
         </p>
       )}
     </div>
+  );
+}
+
+export function WaitlistForm(props: { variant?: "default" | "hero" }) {
+  return (
+    <Suspense fallback={<div className="h-20 animate-pulse bg-white/5 rounded-md" />}>
+      <WaitlistFormInner {...props} />
+    </Suspense>
   );
 }

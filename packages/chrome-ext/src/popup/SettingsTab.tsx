@@ -1,10 +1,48 @@
-import { useState } from "react";
-import { Session } from "../lib/supabase";
+import { useState, useEffect } from "react";
+import { Session, supabase } from "../lib/supabase";
 import { LogOut, Zap, Bell, Shield, ArrowUpRight, Check } from "lucide-react";
 
 export function SettingsTab({ session }: { session: Session }) {
   const [autoSync, setAutoSync] = useState(true);
   const [notifications, setNotifications] = useState(true);
+  const [dailySyncs, setDailySyncs] = useState(0);
+  const syncLimit = 200;
+
+  useEffect(() => {
+    // 1. Load preferences
+    chrome.storage.local.get(["autoSync", "notifications"], (res) => {
+      if (res.autoSync !== undefined) setAutoSync(res.autoSync);
+      if (res.notifications !== undefined) setNotifications(res.notifications);
+    });
+
+    // 2. Fetch real daily syncs from Supabase
+    const fetchSyncs = async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const { count, error } = await supabase
+        .from("clips")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", session.user.id)
+        .gte("created_at", today.toISOString());
+
+      if (!error && count !== null) {
+        setDailySyncs(count);
+      }
+    };
+
+    fetchSyncs();
+  }, [session.user.id]);
+
+  const handleToggleAutoSync = (val: boolean) => {
+    setAutoSync(val);
+    chrome.storage.local.set({ autoSync: val });
+  };
+
+  const handleToggleNotifications = (val: boolean) => {
+    setNotifications(val);
+    chrome.storage.local.set({ notifications: val });
+  };
 
   const handleSignOut = () => {
     chrome.runtime.sendMessage({ type: "SIGN_OUT" }, () => {
@@ -22,10 +60,10 @@ export function SettingsTab({ session }: { session: Session }) {
         {/* Profile Card */}
         <div className="p-4 bg-dark-lighter rounded-2xl border border-white/5 flex items-center gap-4">
           <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xl">
-            {session.user.email[0].toUpperCase()}
+            {(session.user.email?.[0] || "?").toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm truncate">{session.user.email}</h3>
+            <h3 className="font-semibold text-sm truncate">{session.user.email || "Unknown User"}</h3>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-gray-400 uppercase">Free Plan</span>
             </div>
@@ -36,10 +74,13 @@ export function SettingsTab({ session }: { session: Session }) {
         <div className="space-y-2">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Daily Syncs</span>
-            <span className="text-white font-medium">42 / 200</span>
+            <span className="text-white font-medium">{dailySyncs} / {syncLimit}</span>
           </div>
           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full" style={{ width: "21%" }} />
+            <div 
+              className="h-full bg-primary rounded-full transition-all duration-500" 
+              style={{ width: `${Math.min((dailySyncs / syncLimit) * 100, 100)}%` }} 
+            />
           </div>
         </div>
 
@@ -50,7 +91,7 @@ export function SettingsTab({ session }: { session: Session }) {
               <RefreshCwIcon className="w-4 h-4 text-primary" />
               <span className="text-sm">Auto-sync enabled</span>
             </div>
-            <Toggle active={autoSync} onClick={() => setAutoSync(!autoSync)} />
+            <Toggle active={autoSync} onClick={() => handleToggleAutoSync(!autoSync)} />
           </div>
 
           <div className="flex items-center justify-between p-3 bg-dark-lighter rounded-xl border border-white/5">
@@ -58,7 +99,7 @@ export function SettingsTab({ session }: { session: Session }) {
               <Bell className="w-4 h-4 text-primary" />
               <span className="text-sm">Notifications</span>
             </div>
-            <Toggle active={notifications} onClick={() => setNotifications(!notifications)} />
+            <Toggle active={notifications} onClick={() => handleToggleNotifications(!notifications)} />
           </div>
         </div>
 

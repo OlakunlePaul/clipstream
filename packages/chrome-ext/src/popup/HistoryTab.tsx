@@ -1,28 +1,46 @@
 import { useEffect, useState, useRef } from "react";
-import { Search, Clipboard, Lock, Trash2, CheckCircle2 } from "lucide-react";
+import { Search, Clipboard, Lock, Trash2, CheckCircle2, RefreshCw } from "lucide-react";
 import { ContentType } from "@clipstream/shared/src/classifier";
+import { supabase } from "../lib/supabase";
 
 interface HistoryItem {
   id: string;
   content: string;
-  displayValue: string;
+  display_value: string;
   type: ContentType;
-  timestamp: number;
-  isSensitive: boolean;
-  sourceDevice?: string;
+  created_at: string;
+  is_sensitive: boolean;
+  source_device?: string;
 }
 
 export function HistoryTab() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const fetchHistory = async (isInitial = false) => {
+    if (isInitial) setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("clips")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setHistory(data || []);
+    } catch (error) {
+      console.error("Failed to fetch history:", error);
+    } finally {
+      if (isInitial) setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    chrome.storage.local.get("history", (data) => {
-      setHistory(data.history || []);
-    });
+    fetchHistory(true);
   }, []);
 
   const filteredHistory = history.filter((item) =>
@@ -36,9 +54,21 @@ export function HistoryTab() {
   };
 
   const handleDelete = async (id: string) => {
+    // Optimistic Update: Remove from UI immediately
     const updated = history.filter((item) => item.id !== id);
     setHistory(updated);
-    await chrome.storage.local.set({ history: updated });
+    
+    // Background Update: Delete from cloud
+    try {
+      const { error } = await supabase.from("clips").delete().eq("id", id);
+      if (error) throw error;
+      
+      // Also update local storage if needed
+      await chrome.storage.local.set({ history: updated });
+    } catch (error) {
+      console.error("Failed to delete clip:", error);
+      // Optional: rollback if needed, but usually better to just log
+    }
   };
 
   useEffect(() => {
@@ -78,7 +108,12 @@ export function HistoryTab() {
 
       {/* History List */}
       <div ref={listRef} className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-        {filteredHistory.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-40 space-y-3 opacity-50">
+            <RefreshCw className="w-8 h-8 animate-spin" />
+            <p className="text-xs">Fetching clips...</p>
+          </div>
+        ) : filteredHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-6 text-gray-500">
             <Clipboard className="w-12 h-12 mb-4 opacity-20" />
             <p className="text-sm">No clips yet — copy something and it will appear here</p>
@@ -90,7 +125,7 @@ export function HistoryTab() {
               onClick={() => handleCopy(item)}
               className={`group relative p-3 rounded-2xl border transition-all cursor-pointer ${
                 selectedIndex === index
-                  ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20"
+                   ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20"
                   : "bg-dark-lighter border-white/5 hover:border-white/10"
               }`}
             >
@@ -99,7 +134,7 @@ export function HistoryTab() {
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${getTypeStyles(item.type)}`}>
                     {item.type}
                   </span>
-                  {item.isSensitive && (
+                  {item.is_sensitive && (
                     <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 uppercase tracking-wider">
                       <Lock className="w-2.5 h-2.5" />
                       Sensitive
@@ -107,21 +142,21 @@ export function HistoryTab() {
                   )}
                 </div>
                 <span className="text-[10px] text-gray-500">
-                  {formatRelativeTime(item.timestamp)}
+                  {formatRelativeTime(new Date(item.created_at).getTime())}
                 </span>
               </div>
 
               <p className="text-sm text-gray-300 break-all line-clamp-2">
-                {item.isSensitive ? item.displayValue : item.content.slice(0, 60)}
-                {!item.isSensitive && item.content.length > 60 && "..."}
+                {item.is_sensitive ? item.display_value : item.content.slice(0, 60)}
+                {!item.is_sensitive && item.content.length > 60 && "..."}
               </p>
 
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
                 <span className="text-[10px] text-gray-600">
-                  via {item.sourceDevice || "this device"}
+                  via {item.source_device ? "another device" : "this device"}
                 </span>
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
                     handleDelete(item.id);
                   }}

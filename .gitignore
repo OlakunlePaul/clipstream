@@ -20,3 +20,5 @@ out/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+packages/shared/node_modules/.vite/vitest/results.json
+packages/chrome-ext/node_modules/@clipstream/shared/node_modules/.vite/vitest/results.json

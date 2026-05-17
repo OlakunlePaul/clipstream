@@ -1,34 +1,37 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, Session } from "@supabase/supabase-js";
+
+export type { Session };
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://your-project-id.supabase.co";
 const supabaseServiceKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "placeholder-key";
 
-// We use service role key for the API route to bypass RLS for waitlist signups
-export const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-export interface Session {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number; // timestamp in seconds
-  user: {
-    id: string;
-    email: string;
-    user_metadata: {
-      avatar_url?: string;
-      full_name?: string;
-    };
-  };
-}
-
-export async function getSession(): Promise<Session | null> {
-  const { session } = await chrome.storage.local.get("session");
-  if (!session) return null;
-
-  // Refresh logic: check if within 5 minutes of expiry
-  const now = Math.floor(Date.now() / 1000);
-  if (session.expires_at - now < 300) {
-    return null;
+// Custom storage adapter for Chrome Extensions
+const chromeStorageAdapter = {
+  getItem: (key: string) => {
+    return chrome.storage.local.get(key).then(res => res[key] || null);
+  },
+  setItem: (key: string, value: string) => {
+    return chrome.storage.local.set({ [key]: value });
+  },
+  removeItem: (key: string) => {
+    return chrome.storage.local.remove(key);
   }
+};
 
+export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    storage: chromeStorageAdapter,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
+  }
+});
+
+
+export async function getSession() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error || !session) return null;
+
+  // Refresh logic is now handled automatically by supabase-js
   return session;
 }

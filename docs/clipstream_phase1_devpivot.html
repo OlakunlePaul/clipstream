@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipStream — Phase 1 Dev Pivot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0e0f;
+    --bg2: #161819;
+    --bg3: #1e2022;
+    --border: #2a2d30;
+    --border2: #353a3e;
+    --text: #e8eaec;
+    --muted: #7a8490;
+    --accent: #00d68f;
+    --accent2: #0099ff;
+    --amber: #f5a623;
+    --purple: #9b7ff4;
+    --red: #ff5f5f;
+    --radius: 10px;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .logo-mark { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent); letter-spacing: -0.01em; }
+  .logo-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-section { padding: 0 12px; margin-bottom: 8px; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(0,214,143,0.1); color: var(--accent); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Main */
+  .main { padding: 32px 40px; max-width: 860px; }
+  .phase-header { margin-bottom: 32px; }
+  .phase-label { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .phase-title { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; line-height: 1.2; }
+  .phase-desc { font-size: 13px; color: var(--muted); margin-top: 8px; max-width: 580px; line-height: 1.7; }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Stack grid */
+  .stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-bottom: 28px; }
+  .stack-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stack-role { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .stack-name { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .stack-note { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .stack-new { display: inline-block; font-size: 10px; font-weight: 600; background: rgba(0,214,143,0.12); color: var(--accent); border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+
+  /* Section heading */
+  .sec-head { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin: 28px 0 12px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* Steps */
+  .step { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); margin-bottom: 10px; overflow: hidden; }
+  .step-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; user-select: none; transition: background 0.15s; }
+  .step-head:hover { background: var(--bg3); }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; color: var(--muted); flex-shrink: 0; }
+  .step-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .step-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
+  .tag-ext    { background: rgba(0,153,255,0.12); color: var(--accent2); }
+  .tag-cli    { background: rgba(155,127,244,0.12); color: var(--purple); }
+  .tag-vsc    { background: rgba(0,214,143,0.12); color: var(--accent); }
+  .tag-be     { background: rgba(245,166,35,0.12); color: var(--amber); }
+  .tag-crypto { background: rgba(255,95,95,0.12); color: var(--red); }
+  .tag-and    { background: rgba(0,214,143,0.15); color: var(--accent); }
+  .tag-qa     { background: rgba(155,127,244,0.12); color: var(--purple); }
+  .chevron { font-size: 10px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+  .chevron.open { transform: rotate(90deg); }
+  .step-body { display: none; padding: 0 16px 16px; }
+  .step-body.open { display: block; }
+
+  /* Prompt box */
+  .prompt-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .prompt-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-family: var(--mono); font-size: 12px; color: #c8d0d8; line-height: 1.8; white-space: pre-wrap; word-break: break-word; position: relative; }
+  .copy-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-family: var(--sans); padding: 5px 12px; margin-top: 8px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg3); color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--accent); color: var(--accent); }
+
+  /* Notes */
+  .note { background: rgba(0,153,255,0.06); border-left: 2px solid var(--accent2); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12px; color: #8aafcc; line-height: 1.6; margin-top: 12px; }
+  .warn { background: rgba(245,166,35,0.06); border-left: 2px solid var(--amber); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12px; color: #b89050; line-height: 1.6; margin-top: 12px; }
+  .new-tag { background: rgba(0,214,143,0.08); border-left: 2px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12px; color: #60c4a0; line-height: 1.6; margin-top: 12px; }
+
+  /* Verdict */
+  .verdict { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 24px; }
+  .verdict strong { color: var(--text); }
+
+  /* Dep graph */
+  .dep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dep-col-head { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+  .dep-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .dep-num { font-family: var(--mono); font-size: 11px; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
+  .dep-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .dep-text strong { color: var(--text); font-weight: 500; }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .main { padding: 20px; }
+    .dep-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">clipstream/</div>
+      <div class="logo-sub">Phase 1 · Developer pivot</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" onclick="show('overview', this)">
+        <span class="nav-dot" style="background:#00d68f"></span> Stack + dependencies
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Build prompts</div>
+      <button class="nav-item" onclick="show('ext', this)">
+        <span class="nav-dot" style="background:#0099ff"></span> Chrome extension
+      </button>
+      <button class="nav-item" onclick="show('cli', this)">
+        <span class="nav-dot" style="background:#9b7ff4"></span> CLI tool
+      </button>
+      <button class="nav-item" onclick="show('vsc', this)">
+        <span class="nav-dot" style="background:#00d68f"></span> VS Code extension
+      </button>
+      <button class="nav-item" onclick="show('crypto', this)">
+        <span class="nav-dot" style="background:#ff5f5f"></span> Encryption layer
+      </button>
+      <button class="nav-item" onclick="show('android', this)">
+        <span class="nav-dot" style="background:#00d68f"></span> Android app
+      </button>
+      <button class="nav-item" onclick="show('backend', this)">
+        <span class="nav-dot" style="background:#f5a623"></span> Backend + DB
+      </button>
+      <button class="nav-item" onclick="show('qa', this)">
+        <span class="nav-dot" style="background:#9b7ff4"></span> Quality + monitoring
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- Overview -->
+    <div id="overview" class="panel active">
+      <div class="phase-header">
+        <div class="phase-label">Phase 1 · Developer pivot</div>
+        <div class="phase-title">Revised tech stack</div>
+        <div class="phase-desc">Reoriented around the cross-OS developer workflow. Three new components added: CLI tool, VS Code extension, and content-aware detection. Electron dropped; Supabase + Ably retained as the relay backbone.</div>
+      </div>
+
+      <div class="sec-head">Full stack — Phase 1</div>
+      <div class="stack-grid">
+        <div class="stack-card">
+          <div class="stack-role">Chrome extension</div>
+          <div class="stack-name">TypeScript + Vite + MV3</div>
+          <div class="stack-note">Build pipeline, type safety, MV3 offscreen document for background clipboard monitoring</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">CLI tool <span class="stack-new">new</span></div>
+          <div class="stack-name">Node.js + TypeScript</div>
+          <div class="stack-note">npm package — cs copy / cs paste. Pipes into the same Ably sync channel. Works on macOS, Linux, Windows</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">VS Code ext <span class="stack-new">new</span></div>
+          <div class="stack-name">vscode Extension API</div>
+          <div class="stack-note">Command palette: "Paste from ClipStream". Reads history from shared Supabase session, no separate auth</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Android app</div>
+          <div class="stack-name">React Native + Expo</div>
+          <div class="stack-note">Android first. iOS added Phase 2. expo-clipboard, expo-secure-store for key storage</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Auth</div>
+          <div class="stack-name">Supabase Auth</div>
+          <div class="stack-note">Google sign-in via Chrome identity API. CLI uses device auth flow (browser pop-up once)</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Realtime relay</div>
+          <div class="stack-name">Ably</div>
+          <div class="stack-note">WebSocket pub/sub across all surfaces. Local LAN sync added Phase 2 via WebRTC/mDNS</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Encryption</div>
+          <div class="stack-name">tweetnacl</div>
+          <div class="stack-note">Works in browser, Node, and React Native. Zero-knowledge: private keys never leave the device</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Database</div>
+          <div class="stack-name">Supabase Postgres</div>
+          <div class="stack-note">devices, clip_events, users, pinned_snippets tables. RLS on all tables</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Backend</div>
+          <div class="stack-name">Supabase Edge Functions</div>
+          <div class="stack-note">Deno. Auth exchange, device registration, rate limiting, content-type detection</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Content detection <span class="stack-new">new</span></div>
+          <div class="stack-name">Custom classifier</div>
+          <div class="stack-note">Regex + heuristics: detects code, URLs, commands, API keys, file paths. Runs client-side only</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Monitoring</div>
+          <div class="stack-name">Sentry</div>
+          <div class="stack-note">Error tracking across extension, CLI, VS Code ext, and Android. Configured to never log clipboard content</div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-role">Distribution</div>
+          <div class="stack-name">npm + Chrome Web Store + VS Code Marketplace</div>
+          <div class="stack-note">Three publish targets from one monorepo. CLI on npm, extensions on their respective stores</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec-head">Build order + dependencies</div>
+      <div class="dep-grid">
+        <div>
+          <div class="dep-col-head">Sequence</div>
+          <div class="dep-item"><div class="dep-num">1.</div><div class="dep-text"><strong>Encryption layer</strong> — shared lib used by all surfaces. Build and test first.</div></div>
+          <div class="dep-item"><div class="dep-num">2.</div><div class="dep-text"><strong>Backend + DB schema</strong> — devices, auth, rate limiting. Everything else depends on this.</div></div>
+          <div class="dep-item"><div class="dep-num">3.</div><div class="dep-text"><strong>Chrome extension</strong> — primary surface. Most complex MV3 offscreen logic lives here.</div></div>
+          <div class="dep-item"><div class="dep-num">4.</div><div class="dep-text"><strong>CLI tool</strong> — reuses encryption lib and Ably client. Fastest to build after extension.</div></div>
+          <div class="dep-item"><div class="dep-num">5.</div><div class="dep-text"><strong>Android app</strong> — reuses encryption lib. Parallel with CLI if 2 engineers.</div></div>
+          <div class="dep-item"><div class="dep-num">6.</div><div class="dep-text"><strong>VS Code extension</strong> — reads from Supabase; no Ably needed. Lowest complexity.</div></div>
+          <div class="dep-item"><div class="dep-num">7.</div><div class="dep-text"><strong>Quality + monitoring</strong> — add Sentry across all surfaces before first user.</div></div>
+        </div>
+        <div>
+          <div class="dep-col-head">What's changed from original plan</div>
+          <div class="dep-item"><div class="dep-num">+</div><div class="dep-text"><strong>CLI tool added</strong> — terminal-native devs are the core audience; this is table stakes</div></div>
+          <div class="dep-item"><div class="dep-num">+</div><div class="dep-text"><strong>VS Code extension added</strong> — makes ClipStream sticky; replaces Electron in value</div></div>
+          <div class="dep-item"><div class="dep-num">+</div><div class="dep-text"><strong>Content detection added</strong> — developer-specific: code, API keys, file paths, commands</div></div>
+          <div class="dep-item"><div class="dep-num">+</div><div class="dep-text"><strong>API key masking added</strong> — security angle is a core differentiator, not a feature</div></div>
+          <div class="dep-item"><div class="dep-num">–</div><div class="dep-text"><strong>Electron dropped</strong> — CLI + VS Code ext replaces the desktop app for dev workflow</div></div>
+          <div class="dep-item"><div class="dep-num">–</div><div class="dep-text"><strong>Custom auth dropped</strong> — Chrome identity + Supabase auth handles it without the overhead</div></div>
+        </div>
+      </div>
+
+      <div class="verdict">
+        <strong>Monorepo structure:</strong> Put all surfaces in one repo — <code>packages/shared-crypto</code>, <code>packages/shared-ably</code>, <code>packages/chrome-ext</code>, <code>packages/cli</code>, <code>packages/vscode-ext</code>, <code>packages/android</code>. Turborepo or pnpm workspaces handles the build graph. The shared packages are what make the CLI and VS Code ext fast to build — they reuse the same encryption and sync logic as the extension.
+      </div>
+    </div>
+
+    <!-- Chrome Extension -->
+    <div id="ext" class="panel">
+      <div class="phase-header">
+        <div class="phase-label">Build prompt 1 of 7</div>
+        <div class="phase-title">Chrome extension</div>
+        <div class="phase-desc">MV3 extension with background clipboard monitoring, content-aware detection, API key masking, and auto-sync via Ably. Primary surface — most complex to build.</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Scaffold + auth</div>
+          <span class="step-tag tag-ext">Extension</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Scaffold a production MV3 Chrome extension for ClipStream using TypeScript and Vite.
+
+Repo: pnpm monorepo. This package lives at packages/chrome-ext.
+
+Setup:
+- vite-plugin-web-extension for build
+- TypeScript strict mode, ESLint + Prettier
+- Folders: src/background, src/popup, src/offscreen, src/content, src/lib
+
+manifest.json permissions:
+["clipboardRead", "clipboardWrite", "offscreen", "storage", "alarms", "identity", "notifications"]
+
+Auth flow (background.ts):
+- On install: call chrome.identity.getAuthToken({interactive: true})
+- POST token to Supabase Edge Function /auth/google → receive Supabase session
+- Store session in chrome.storage.local with expiry
+- Export getSession() that refreshes token if within 5 min of expiry
+
+Popup (React + Tailwind, dark theme):
+- Not signed in: "Sign in with Google" button
+- Signed in: user avatar, email, green "Syncing" badge, sign out link</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">MV3 background clipboard monitor</div>
+          <span class="step-tag tag-ext">Extension</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Add automatic clipboard monitoring to the ClipStream MV3 extension using an offscreen document.
+
+background.ts:
+- Set chrome.alarms.create('clipCheck', {periodInMinutes: 1/60}) for ~1s polling
+- On alarm: ensure offscreen document exists (chrome.offscreen.createDocument if not)
+- Send message {type: 'READ_CLIPBOARD'} to offscreen
+- On response: compare with chrome.storage.session item 'lastClip'
+- If changed and not empty: run through content classifier, then publish to Ably
+
+offscreen.ts:
+- Listen for READ_CLIPBOARD message
+- navigator.clipboard.readText() → sendResponse({text, ok: true})
+- On NotAllowedError: sendResponse({ok: false, reason: 'permission'})
+
+Offscreen document must stay alive — recreate if closed. Log errors to Sentry, never log clipboard content.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="warn">⚠ Test this step on a real Chrome install before continuing. The offscreen document lifecycle is the trickiest part of MV3 — document closure timing varies between Chrome versions.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Content-aware detection + API key masking</div>
+          <span class="step-tag tag-ext">Extension</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Build the content classifier for ClipStream at packages/shared/src/classifier.ts.
+This runs client-side only — nothing is sent to a server for classification.
+
+Types to detect (return as ContentType enum):
+- API_KEY: matches sk-[a-zA-Z0-9]{20,}, AKIA[A-Z0-9]{16}, ghp_[a-zA-Z0-9]{36}, 
+           xoxb-[0-9-]+, Bearer [a-zA-Z0-9._-]+
+- COMMAND: starts with $, >, #, npm, yarn, pnpm, git, curl, ssh, docker, kubectl, cd, ls, cat, brew
+- CODE: contains {, }, ;, =>, function, const, let, def, class, import, return
+- FILE_PATH: starts with /, ~/, C:\, ./, ../
+- URL: starts with http://, https://, or ftp://
+- ERROR_TRACE: contains "Error:", "Exception:", "Traceback", "at line", "stack trace"
+- TEXT: fallback
+
+Masking for API_KEY type:
+- Store full value encrypted (as normal)
+- displayValue: mask all but last 4 chars with ••••
+- Add isSensitive: true flag
+
+Export: classifyClip(text: string): {type: ContentType, displayValue: string, isSensitive: boolean}
+
+Add unit tests for each type using Vitest.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="new-tag">✦ This is the developer differentiator. No clipboard sync tool currently does this. The isSensitive flag also gates what gets shown in notifications — API keys should never appear in OS notification banners.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">4</div>
+          <div class="step-title">Popup UI — history + devices</div>
+          <span class="step-tag tag-ext">Extension</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Build the production popup UI for ClipStream. React + Tailwind, 320×520px, dark theme (#0d0e0f bg).
+
+Three tabs: History, Devices, Settings.
+
+History tab (default):
+- List of last 30 items from chrome.storage.local
+- Each item shows: content-type badge (CODE/COMMAND/URL/API_KEY/etc), 
+  truncated preview (60 chars), source device name, relative time
+- API_KEY items: show masked value (••••xxxx), lock icon, red "Sensitive" badge
+- Click item: copy to clipboard, show brief "Copied" toast
+- Search bar at top: filter by text content (client-side only)
+- Empty state: "No clips yet — copy something and it will appear here"
+
+Devices tab:
+- List of user's connected devices from Supabase
+- Name, platform icon (extension/cli/android/vscode), last seen relative time
+- "This device" badge on current device
+
+Settings tab:
+- Plan badge (Free / Pro), daily sync counter (used / 200 free)
+- Toggle: auto-sync enabled/disabled (writes to chrome.storage.local)
+- Toggle: notifications on/off
+- "Upgrade to Pro" link → clipstream.dev/pro
+- Sign out button
+
+Keyboard nav: arrow keys move between history items, Enter copies, Delete removes.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CLI Tool -->
+    <div id="cli" class="panel">
+      <div class="phase-header">
+        <div class="phase-label">Build prompt 2 of 7</div>
+        <div class="phase-title">CLI tool</div>
+        <div class="phase-desc">Terminal-native clipboard sync. <code>cs copy</code> and <code>cs paste</code> from any shell on any OS. Published to npm as a global install. The developer discovery channel — shared in dotfiles, README snippets, blog posts.</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Package scaffold + auth flow</div>
+          <span class="step-tag tag-cli">CLI</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Scaffold the ClipStream CLI at packages/cli in the monorepo.
+
+Stack: Node.js 20+, TypeScript, tsup for bundling, Commander.js for CLI parsing.
+
+package.json:
+- name: "clipstream-cli", bin: {"cs": "./dist/index.js"}
+- Publish to npm as a public package
+
+Commands to scaffold (empty handlers for now):
+  cs copy [text]     — copy text or stdin to ClipStream
+  cs paste           — print most recent clip to stdout
+  cs history         — list last 10 clips
+  cs auth login      — open browser for auth
+  cs auth logout     — clear stored credentials
+  cs status          — show connected devices + sync status
+
+Auth flow (cs auth login):
+- Generate a random state token
+- Open browser to clipstream.dev/cli-auth?state={token}
+- Start a local HTTP server on port 54321
+- Web page completes OAuth → POSTs Supabase session to localhost:54321/callback
+- Store session in ~/.config/clipstream/credentials.json (600 permissions)
+- Print "✓ Logged in as {email}"
+
+Add a helper requireAuth() that reads credentials, refreshes if expired, and prints 
+"Run cs auth login first" and exits 1 if not authed.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="note">The browser-based auth flow (device auth style) means developers never type passwords into a terminal. One-time setup, then it's invisible.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">copy / paste / history commands</div>
+          <span class="step-tag tag-cli">CLI</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Implement the core ClipStream CLI commands using the shared packages.
+
+Imports: packages/shared-crypto (encryption), packages/shared-ably (sync client)
+
+cs copy [text]:
+- If text arg provided: use it
+- If no arg and stdin is piped: read from stdin (for: echo "hello" | cs copy)
+- If no arg and no stdin: read from OS clipboard (clipboardy package)
+- Run through classifier (packages/shared/classifier)
+- Encrypt for all user's other devices
+- Publish to Ably channel user:{userId}:clips
+- Enforce rate limit via Supabase edge function
+- Print: "✓ Copied [{type}] to ClipStream ({N} devices)" or error
+
+cs paste:
+- Subscribe to Ably channel for 5s, take latest message OR fetch from Supabase
+- Decrypt using sender's public key
+- Write to stdout (so it works with pipes: cs paste | pbcopy)
+- If isSensitive: print warning "⚠ Sensitive content — not written to terminal history"
+
+cs history:
+- Fetch last 10 clip_events metadata from Supabase (no ciphertext — metadata only)
+- Print as a numbered list: [1] CODE · 2 min ago · from Chrome (macOS)
+- Accept --limit N flag
+
+Handle offline gracefully: "Not connected — showing cached history" if Ably unavailable.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="new-tag">✦ The stdin pipe support (<code>echo "hello" | cs copy</code>) is what makes this feel like a real Unix tool. Developers will add it to scripts and share those scripts — that's viral distribution.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Cross-platform clipboard + OS integration</div>
+          <span class="step-tag tag-cli">CLI</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Add cross-platform OS clipboard support and shell completion to the ClipStream CLI.
+
+Clipboard read/write:
+- Use clipboardy (supports macOS pbcopy/pbpaste, xclip/xsel on Linux, clip.exe on Windows)
+- Wrap in try/catch — headless Linux servers have no clipboard; fail gracefully with clear message:
+  "No display available — use: echo 'text' | cs copy"
+
+cs paste --write flag:
+- In addition to stdout, write to OS clipboard
+- Print: "✓ Pasted to clipboard" to stderr (so stdout stays clean for pipes)
+
+Shell completion:
+- cs completion bash   → outputs bash completion script
+- cs completion zsh    → outputs zsh completion script  
+- Print install instructions after output:
+  "Add to ~/.bashrc: source <(cs completion bash)"
+
+cs --version: print package version from package.json
+
+README.md (generate this too):
+- Install: npm install -g clipstream-cli
+- Quick start: 4 commands showing copy, paste, pipe usage
+- How it works: 1 paragraph on E2E encryption
+- Link to clipstream.dev</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VS Code Extension -->
+    <div id="vsc" class="panel">
+      <div class="phase-header">
+        <div class="phase-label">Build prompt 3 of 7</div>
+        <div class="phase-title">VS Code extension</div>
+        <div class="phase-desc">Clipboard history inside the editor. Command palette access, sidebar history panel, and inline paste — no tab switching required. The stickiness layer that keeps developers in ClipStream once they're in.</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Extension scaffold + auth</div>
+          <span class="step-tag tag-vsc">VS Code</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Scaffold the ClipStream VS Code extension at packages/vscode-ext in the monorepo.
+
+Stack: VS Code Extension API, TypeScript, webpack for bundling (vsce requires it), 
+no React (use VS Code's native webview API for UI).
+
+package.json:
+- publisher: "clipstream", name: "clipstream", displayName: "ClipStream"
+- engines: {"vscode": "^1.85.0"}
+- Categories: ["Other"], keywords: ["clipboard", "sync", "developer"]
+
+Commands to register (package.json contributes.commands):
+- clipstream.pasteFromHistory     — "ClipStream: Paste from history"
+- clipstream.showHistory          — "ClipStream: Show clipboard history"  
+- clipstream.copyToClipStream     — "ClipStream: Copy selection to ClipStream"
+- clipstream.login                — "ClipStream: Sign in"
+- clipstream.logout               — "ClipStream: Sign out"
+
+Auth:
+- On activate: check secrets.get('clipstream.session')
+- If no session: show info message "ClipStream: Sign in to sync your clipboard" with "Sign in" action
+- clipstream.login: open browser to clipstream.dev/vscode-auth?state={token}, 
+  start local server on 54322, store session via context.secrets.store('clipstream.session', ...)</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Quick pick history + paste command</div>
+          <span class="step-tag tag-vsc">VS Code</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Implement the core "Paste from history" command for the ClipStream VS Code extension.
+
+clipstream.pasteFromHistory:
+- Fetch last 30 clips from Supabase (metadata + ciphertext) for this user
+- Decrypt each using packages/shared-crypto
+- Show vscode.window.showQuickPick() with items:
+    label: content-type icon + truncated text (50 chars)
+    description: source device + relative time
+    detail: first 120 chars of content (or "••••" for API_KEY type)
+  
+  Icons by type:
+    CODE → $(code)
+    COMMAND → $(terminal)
+    URL → $(link)
+    API_KEY → $(lock)
+    FILE_PATH → $(file)
+    ERROR_TRACE → $(bug)
+    TEXT → $(clippy)
+
+- On selection: insert at active cursor position
+  (vscode.window.activeTextEditor.edit → insertText at selection.active)
+- If no active editor: write to OS clipboard instead, show info message
+
+clipstream.copyToClipStream:
+- Get active editor's selected text
+- If no selection: show warning "Select text first"
+- Encrypt + publish to Ably via packages/shared-ably
+- Show status bar message "✓ Copied to ClipStream" for 3 seconds
+
+Keyboard shortcut defaults (contributes.keybindings):
+- Paste from history: Ctrl+Shift+V (Cmd+Shift+V on Mac)
+- Copy to ClipStream: Ctrl+Shift+C (Cmd+Shift+C on Mac)</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="new-tag">✦ The Quick Pick UI is native VS Code — no webview needed, instant to open, keyboard navigable. Developers will reach for Cmd+Shift+V the same way they reach for Cmd+V. That's the habit to build.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Sidebar history panel + status bar</div>
+          <span class="step-tag tag-vsc">VS Code</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Add a sidebar Tree View and status bar item to the ClipStream VS Code extension.
+
+Sidebar (contributes.views, viewContainer "clipstream"):
+- ClipStreamHistoryProvider implements vscode.TreeDataProvider
+- Tree items: each clip as a TreeItem
+    label: type icon + first 40 chars
+    tooltip: full decrypted content
+    contextValue: "clipItem" → enables right-click menu
+  
+  Right-click menu (contributes.menus editor/context):
+    "Paste" → insert at cursor
+    "Copy to clipboard" → write to OS clipboard
+    "Delete" → remove from Supabase + local cache
+
+- Auto-refresh: subscribe to Ably channel, call _onDidChangeTreeData.fire() on new clip
+- Show a spinner TreeItem while loading
+
+Status bar item (right side):
+- Default: "$(clippy) ClipStream" 
+- On sync: "$(sync~spin) Syncing..."
+- On new clip received: "$(check) Synced" for 2s then back to default
+- Click: run clipstream.showHistory
+- Tooltip: "X clips today · Y devices connected"
+
+Not signed in state: show single TreeItem "Sign in to ClipStream" that runs clipstream.login on click.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Encryption -->
+    <div id="crypto" class="panel">
+      <div class="phase-header">
+        <div class="phase-label">Build prompt 4 of 7</div>
+        <div class="phase-title">Encryption layer</div>
+        <div class="phase-desc">Zero-knowledge E2E encryption shared across all surfaces. Build and test this before writing any sync code. A silent decrypt failure returns garbage — not an error.</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Shared crypto package</div>
+          <span class="step-tag tag-crypto">Crypto</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Build the shared encryption package for ClipStream at packages/shared-crypto.
+
+Library: tweetnacl (works in browser extension, Node.js CLI, and React Native).
+Do NOT use WebCrypto — it's not available in all contexts.
+
+Exports:
+
+generateKeyPair(): {publicKey: Uint8Array, privateKey: Uint8Array}
+
+exportKey(key: Uint8Array): string  — base64 encode for storage/transport
+importKey(str: string): Uint8Array  — base64 decode
+
+encryptForDevice(
+  plaintext: string,
+  theirPublicKey: string,   — base64 encoded
+  myPrivateKey: string      — base64 encoded
+): {ciphertext: string, nonce: string}  — both base64
+
+decryptFromDevice(
+  ciphertext: string,       — base64
+  nonce: string,            — base64
+  theirPublicKey: string,   — base64 (sender's public key)
+  myPrivateKey: string      — base64
+): string                   — plaintext, throws on failure
+
+encryptForMultipleDevices(
+  plaintext: string,
+  devices: Array<{deviceId: string, publicKey: string}>,
+  myPrivateKey: string
+): Array<{deviceId: string, ciphertext: string, nonce: string}>
+
+Add Vitest unit tests:
+1. Round-trip: encrypt then decrypt returns original text
+2. Wrong key: decryptFromDevice throws
+3. Multi-device: each device can decrypt its own payload
+4. Unicode: handles emoji, CJK, special chars
+
+Add JSDoc comment on each export explaining the zero-knowledge model:
+"Private keys are generated on-device and never transmitted. The server only stores 
+encrypted payloads and public keys. Even ClipStream cannot read clipboard contents."</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="warn">⚠ Run the tests on actual hardware (macOS + Android) before wiring this into sync. The base64 encoding/decoding behaves differently across environments in edge cases.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Android -->
+    <div id="android" class="panel">
+      <div class="phase-header">
+        <div class="phase-label">Build prompt 5 of 7</div>
+        <div class="phase-title">Android app</div>
+        <div class="phase-desc">Receive and send clips on mobile. The loop-closer — developers testing on a physical Android device need to get that error message or log line to their laptop instantly.</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">App scaffold + auth + device registration</div>
+          <span class="step-tag tag-and">Android</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Build the ClipStream Android app using Expo (React Native) at packages/android.
+
+Auth: Supabase Google OAuth via expo-auth-session. Same session model as extension.
+
+On first launch:
+1. Show sign-in screen (Google button only, dark theme)
+2. After auth: generate keypair via packages/shared-crypto, store private key in expo-secure-store
+3. POST to /devices/register with {publicKey, deviceName: Device.deviceName, platform: 'android'}
+4. Receive back: other devices' public keys, store in AsyncStorage
+
+On subsequent launches:
+- Restore session from expo-secure-store
+- Restore keypair, re-register device (upsert) to update last_seen
+- Subscribe to Ably channel user:{userId}:clips
+
+On incoming clip:
+- Find my deviceId in payload recipients, decrypt ciphertext using sender's public key
+- Run through classifier (packages/shared/classifier) — display type badge
+- Write to device clipboard: expo-clipboard.setStringAsync()
+- Show heads-up notification (expo-notifications):
+    title: "ClipStream" 
+    body: isSensitive ? "Sensitive content received" : first 60 chars
+- Append to AsyncStorage history (keep last 100)</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Main UI — history list + send FAB</div>
+          <span class="step-tag tag-and">Android</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Build the main screen and navigation for the ClipStream Android app.
+
+Navigation: React Navigation bottom tabs — History, Devices, Settings.
+
+History screen:
+- FlatList of clip items (most recent first)
+- Each item: content-type badge (colored pill), truncated text, source device, relative time
+- API_KEY items: masked display (••••last4), lock icon, "Sensitive" red label
+- Tap item: copy to device clipboard, show brief toast "Copied"
+- Long press: show action sheet — "Copy", "Share", "Delete"
+- Pull to refresh: re-fetch from Supabase
+- Empty state: illustrated empty state, "Copy something on another device"
+
+Send FAB (bottom right):
+- On tap: read current clipboard via expo-clipboard.getStringAsync()
+- If empty: show "Nothing in clipboard to send"
+- Otherwise: show preview card + "Send to all devices" button
+- On confirm: encrypt for all devices, publish to Ably
+- Show success toast: "Sent to {N} devices"
+
+Devices screen:
+- List of connected devices from Supabase
+- Platform icon (browser/terminal/android/vscode), name, last seen
+- "This device" chip on current device
+
+Settings screen:
+- User avatar + email
+- Plan badge + daily usage bar
+- Notification toggle
+- Sign out button (clears all stored data)</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="note">Test on a physical Android device — emulator clipboard behaviour is unreliable and expo-notifications behave differently on emulator vs device.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Backend -->
+    <div id="backend" class="panel">
+      <div class="phase-header">
+        <div class="phase-label">Build prompt 6 of 7</div>
+        <div class="phase-title">Backend + database</div>
+        <div class="phase-desc">Supabase Postgres + Edge Functions. Handles auth exchange, device registry, rate limiting, and metadata storage. No clipboard content ever stored server-side.</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Database schema + RLS</div>
+          <span class="step-tag tag-be">Backend</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Create the Supabase database schema for ClipStream. Store all in /supabase/migrations/.
+
+Tables:
+
+users:
+  id uuid PK (refs auth.users)
+  email text
+  plan text default 'free' -- 'free' | 'pro' | 'team'
+  syncs_today int default 0
+  syncs_reset_at timestamptz default now()
+  created_at timestamptz default now()
+
+devices:
+  id uuid PK default gen_random_uuid()
+  user_id uuid FK → users.id
+  public_key text NOT NULL
+  device_name text
+  platform text  -- 'chrome-ext' | 'cli' | 'vscode' | 'android' | 'ios'
+  last_seen timestamptz default now()
+  created_at timestamptz default now()
+  UNIQUE(user_id, platform, device_name)
+
+clip_events (metadata only — NO plaintext, NO ciphertext):
+  id uuid PK default gen_random_uuid()
+  user_id uuid FK → users.id
+  sender_device_id uuid FK → devices.id
+  content_type text  -- CODE | COMMAND | URL | API_KEY | FILE_PATH | ERROR_TRACE | TEXT
+  is_sensitive boolean default false
+  content_length int
+  recipient_count int
+  ts timestamptz default now()
+
+RLS policies:
+- users: SELECT/UPDATE own row only (auth.uid() = id)
+- devices: SELECT all where user_id = auth.uid(), INSERT/UPDATE own device only
+- clip_events: INSERT where user_id = auth.uid(), SELECT last 7 days where user_id = auth.uid()
+
+pg_cron job: reset syncs_today to 0 at midnight UTC daily.
+Index: clip_events(user_id, ts DESC) for history queries.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Edge functions</div>
+          <span class="step-tag tag-be">Backend</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Build four Supabase Edge Functions (Deno) for ClipStream.
+
+POST /auth/google:
+- Receive: {idToken: string} from Chrome identity API or CLI browser auth
+- Exchange with Google tokeninfo endpoint to get email + sub
+- Upsert user in users table
+- Return Supabase session (use supabaseAdmin.auth.signInWithIdToken)
+
+POST /devices/register:
+- Auth: Bearer token (Supabase session)
+- Body: {publicKey, deviceName, platform}
+- Upsert into devices table (update last_seen if exists)
+- Return: all other active devices for this user 
+  [{deviceId, publicKey, deviceName, platform, lastSeen}]
+  (filter: last_seen within 30 days)
+
+POST /sync/record:
+- Auth: Bearer token
+- Body: {contentType, isSensitive, contentLength, recipientCount}
+- Check syncs_today < 200 (free) or unlimited (pro)
+- If over limit: return {allowed: false, remaining: 0}
+- Increment syncs_today, insert clip_events row
+- Return {allowed: true, remaining: N}
+
+GET /devices:
+- Auth: Bearer token
+- Return all devices for auth user (same as register response)
+- Used by CLI + VS Code ext to get recipients without re-registering
+
+All functions: CORS headers for extension origin, reject unauthenticated requests with 401.
+Never log request bodies — clipboard content may appear in metadata.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- QA -->
+    <div id="qa" class="panel">
+      <div class="phase-header">
+        <div class="phase-label">Build prompt 7 of 7</div>
+        <div class="phase-title">Quality + monitoring</div>
+        <div class="phase-desc">Sentry across all four surfaces, product analytics that never touch clipboard content, and an integration test that proves the full loop works end-to-end before the first user.</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Sentry across all surfaces</div>
+          <span class="step-tag tag-qa">Quality</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Add Sentry error tracking to all four ClipStream surfaces.
+
+Chrome extension (background.ts + offscreen.ts):
+- @sentry/browser, init with DSN from import.meta.env.VITE_SENTRY_DSN
+- Tag all events: platform: 'chrome-ext', userId, plan
+- Wrap offscreen clipboard read in Sentry.withScope + captureException
+- CRITICAL: add beforeSend hook that strips any event data containing clipboard text patterns
+
+CLI (packages/cli):
+- @sentry/node, init in src/index.ts
+- Wrap command handlers in try/catch → Sentry.captureException
+- Tag: platform: 'cli', os: process.platform
+
+VS Code extension:
+- @sentry/node (VS Code ext runs in Node context)
+- Init in extension activate()
+- Wrap all command handlers
+
+Android:
+- @sentry/react-native
+- Init in App.tsx with auto-capture of unhandled rejections
+
+Shared beforeSend rule for ALL surfaces:
+const SENSITIVE_PATTERNS = [/sk-[a-zA-Z0-9]{10,}/, /AKIA[A-Z0-9]{10,}/, /ghp_[a-zA-Z0-9]{10,}/];
+function scrubSensitive(event) {
+  const str = JSON.stringify(event);
+  if (SENSITIVE_PATTERNS.some(p => p.test(str))) {
+    return null; // drop the event entirely
+  }
+  return event;
+}
+
+Alert rule: notify via email if error_rate > 5% in any 10-minute window on any surface.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-head" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">End-to-end integration test</div>
+          <span class="step-tag tag-qa">Quality</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <div class="prompt-label">Prompt</div>
+          <div class="prompt-box">Write an integration test that validates the full ClipStream sync loop before first user.
+
+Test file: packages/tests/integration/sync-loop.test.ts (Vitest)
+
+Test: "copy on CLI → received on second CLI instance"
+1. Create two test devices (generate two keypairs, register both against a test user)
+2. Device A: call encryptForMultipleDevices(testText, [deviceB])
+3. Publish to Ably test channel
+4. Device B: subscribe to channel, receive payload
+5. Decrypt using deviceB's private key + deviceA's public key
+6. Assert decrypted text === testText
+
+Test: "API key detection + masking"
+1. classifyClip("sk-abc123def456ghi789jkl012mno345pqr678")
+2. Assert type === 'API_KEY'
+3. Assert isSensitive === true
+4. Assert displayValue ends in last 4 chars of key
+
+Test: "rate limiting"
+1. Call /sync/record 201 times for a free-plan user
+2. Assert 200th call returns {allowed: true}
+3. Assert 201st call returns {allowed: false, remaining: 0}
+
+Test: "wrong key decrypt throws"
+1. Encrypt with deviceA keypair
+2. Attempt decrypt with deviceC's (unrelated) keypair
+3. Assert throws
+
+Run via: pnpm test --filter=tests
+CI: add to GitHub Actions on push to main.</div>
+          <button class="copy-btn" onclick="cp(this)">Copy prompt</button>
+          <div class="note">Don't skip the integration test. The full loop (encrypt → publish → subscribe → decrypt) has three failure points — encryption, Ably delivery, and decryption. Testing each in isolation misses the wiring between them.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function toggle(head) {
+  const body = head.nextElementSibling;
+  const chev = head.querySelector('.chevron');
+  const open = body.classList.toggle('open');
+  chev.classList.toggle('open', open);
+}
+function cp(btn) {
+  const text = btn.previousElementSibling.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy prompt'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+</script>
+</body>
+</html>

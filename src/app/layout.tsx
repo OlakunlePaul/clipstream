@@ -1,14 +1,32 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Mono, DM_Sans } from "next/font/google";
 import "./globals.css";
 
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "ClipStream | Copy anywhere. Paste everywhere. Instantly.",
-  description: "Secure, end-to-end encrypted cross-device clipboard sync. Seamlessly bridge your devices with instant clipboard sharing.",
-  keywords: ["clipboard sync", "cross-device clipboard", "encrypted clipboard", "copy paste sync", "productivity tool"],
+  title: "ClipStream — Clipboard sync for developers",
+  description: "End-to-end encrypted clipboard sync across Mac, Linux, and Android. Built for developers who don't live on one OS. Under 50ms on local network.",
+  metadataBase: new URL("https://clipstream.dev"),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "ClipStream | Universal Clipboard Sync",
-    description: "Secure, end-to-end encrypted cross-device clipboard sync.",
-    url: "https://clipstream.io",
+    title: "ClipStream — Clipboard sync for developers",
+    description: "End-to-end encrypted clipboard sync across Mac, Linux, and Android. Built for developers who don't live on one OS. Under 50ms on local network.",
+    url: "https://clipstream.dev",
     siteName: "ClipStream",
     images: [
       {
@@ -22,12 +40,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ClipStream | Universal Clipboard Sync",
-    description: "Secure, end-to-end encrypted cross-device clipboard sync.",
+    title: "ClipStream — Clipboard sync for developers",
+    description: "End-to-end encrypted clipboard sync across Mac, Linux, and Android. Built for developers who don't live on one OS. Under 50ms on local network.",
   },
 };
-
-import { Navbar } from "@/components/Navbar";
 
 export default function RootLayout({
   children,
@@ -35,9 +51,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-full flex flex-col font-body selection:bg-accent/30 selection:text-white">
-        <Navbar />
+    <html lang="en" className={`h-full ${ibmPlexMono.variable} ${dmSans.variable}`}>
+      <body className="min-h-full flex flex-col font-sans selection:bg-accent/30 selection:text-white">
         {children}
       </body>
     </html>

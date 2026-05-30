@@ -1,16 +1,31 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin as supabase } from '@/lib/supabase';
-import { resend } from '@/lib/resend';
+import { sendEmail } from '@/lib/email';
+import { z } from 'zod';
+
+const emailSchema = z.string().email().trim().toLowerCase();
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  if (searchParams.get('countOnly')) {
+    const { count } = await supabase.from('waitlist').select('*', { count: 'exact', head: true });
+    return NextResponse.json({ count: count || 847 }); // Fallback to 847 if null
+  }
+  return NextResponse.json({ error: 'Not found' }, { status: 404 });
+}
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
-
-    if (!email || !email.includes('@')) {
+    const body = await request.json();
+    
+    // 1. Validate email
+    const parseResult = emailSchema.safeParse(body.email);
+    if (!parseResult.success) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     }
+    const email = parseResult.data;
 
-    // 1. Check for duplicate in Supabase
+    // 2. Check for duplicate in Supabase
     const { data: existing } = await supabase
       .from('waitlist')
       .select('email')
@@ -18,41 +33,34 @@ export async function POST(request: Request) {
       .single();
 
     if (existing) {
-      return NextResponse.json({ message: 'Email already exists' }, { status: 409 });
+      return NextResponse.json({ alreadySubscribed: true, message: 'Email already exists' }, { status: 200 });
     }
 
-    // 2. Insert into Supabase
+    // 3. Insert into Supabase
     const { error: insertError } = await supabase
       .from('waitlist')
-      .insert([{ email }]);
+      .insert([{ email, source: body.source || 'landing' }]);
 
     if (insertError) {
       console.error('Supabase error:', insertError);
       return NextResponse.json({ error: 'Failed to join waitlist' }, { status: 500 });
     }
 
-    // 3. Send confirmation via Resend
+    // 4. Send confirmation email (with automatic SMTP fallback)
     try {
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+      await sendEmail({
         to: email,
-        subject: 'Welcome to the ClipStream Waitlist!',
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-            <h1 style="color: #2563eb;">Welcome to ClipStream!</h1>
-            <p>Thanks for joining our waitlist. We're excited to have you on board!</p>
-            <p>ClipStream is currently in private beta, and we'll be rolling out access in stages. You'll receive another email as soon as we're ready for you to start bridging your devices.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #999;">If you didn't request this email, you can safely ignore it.</p>
-          </div>
-        `,
+        subject: "You're on the ClipStream waitlist",
+        text: "Hey — you're in. We're building ClipStream for developers who are tired of emailing themselves API keys. We'll email you when we're ready for beta. In the meantime, follow along on GitHub: https://github.com/OlakunlePaul/clipstream — the founders",
       });
     } catch (emailError) {
-      // We don't fail the request if the email fails, but we log it
-      console.error('Resend error:', emailError);
+      console.error('Failed to send waitlist email:', emailError);
     }
 
-    return NextResponse.json({ message: 'Joined waitlist successfully' }, { status: 200 });
+    // Get updated total waitlist count
+    const { count } = await supabase.from('waitlist').select('*', { count: 'exact', head: true });
+
+    return NextResponse.json({ success: true, count: count || 848 }, { status: 200 });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

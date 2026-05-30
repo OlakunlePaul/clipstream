@@ -6,6 +6,11 @@ export function SettingsTab({ session }: { session: Session }) {
   const [autoSync, setAutoSync] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [dailySyncs, setDailySyncs] = useState(0);
+  const [tier, setTier] = useState<"free" | "pro" | "lifetime">("free");
+  const [isActivating, setIsActivating] = useState(false);
+  const [activationKey, setActivationKey] = useState("");
+  const [activationStatus, setActivationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [activationError, setActivationError] = useState("");
   const syncLimit = 200;
 
   useEffect(() => {
@@ -15,25 +20,36 @@ export function SettingsTab({ session }: { session: Session }) {
       if (res.notifications !== undefined) setNotifications(res.notifications);
     });
 
-    // 2. Fetch real daily syncs from Supabase
-    const fetchSyncs = async () => {
-      const dateStr = new Date().toISOString().split('T')[0];
+    // 2. Fetch profile tier and daily syncs
+    const fetchData = async () => {
+      // Fetch tier
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("tier")
+        .eq("id", session.user.id)
+        .single();
       
-      const { data, error } = await supabase
+      if (!profileError && profile) {
+        setTier(profile.tier as "free" | "pro" | "lifetime");
+      }
+
+      // Fetch daily syncs
+      const dateStr = new Date().toISOString().split('T')[0];
+      const { data: usage, error: usageError } = await supabase
         .from("usage_stats")
         .select("sync_count")
         .eq("user_id", session.user.id)
         .eq("date", dateStr)
         .single();
 
-      if (!error && data) {
-        setDailySyncs(data.sync_count);
+      if (!usageError && usage) {
+        setDailySyncs(usage.sync_count);
       } else {
         setDailySyncs(0);
       }
     };
 
-    fetchSyncs();
+    fetchData();
   }, [session.user.id]);
 
   const handleToggleAutoSync = (val: boolean) => {
@@ -52,10 +68,58 @@ export function SettingsTab({ session }: { session: Session }) {
     });
   };
 
+  const handleActivateKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activationKey.trim()) return;
+
+    setActivationStatus("loading");
+    setActivationError("");
+
+    try {
+      const { data, error } = await supabase.rpc("activate_license_key", {
+        p_key_code: activationKey.trim(),
+      });
+
+      if (error) throw error;
+
+      if (data === "SUCCESS") {
+        setActivationStatus("success");
+        // Refetch profile to update the UI tier
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("tier")
+          .eq("id", session.user.id)
+          .single();
+        if (profile) {
+          setTier(profile.tier as "free" | "pro" | "lifetime");
+        }
+        setTimeout(() => {
+          setIsActivating(false);
+          setActivationStatus("idle");
+          setActivationKey("");
+        }, 1500);
+      } else if (data === "KEY_NOT_FOUND") {
+        setActivationStatus("error");
+        setActivationError("Invalid activation key. Please check and try again.");
+      } else if (data === "KEY_ALREADY_USED") {
+        setActivationStatus("error");
+        setActivationError("This license key has already been redeemed.");
+      } else {
+        setActivationStatus("error");
+        setActivationError("Activation failed. Unknown response code.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setActivationStatus("error");
+      setActivationError(err.message || "Failed to connect to the activation server.");
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-white/5">
+    <div className="flex flex-col h-full bg-dark text-text">
+      <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <h2 className="text-lg font-bold">Settings</h2>
+        <span className="font-mono text-xs text-muted">// clipstream.v1</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -67,7 +131,21 @@ export function SettingsTab({ session }: { session: Session }) {
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm truncate">{session.user.email || "Unknown User"}</h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-gray-400 uppercase">Free Plan</span>
+              {tier === "free" && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-gray-400 uppercase tracking-wider">
+                  Free Plan
+                </span>
+              )}
+              {tier === "pro" && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/25 text-primary border border-primary/30 uppercase tracking-wider">
+                  Pro Plan
+                </span>
+              )}
+              {tier === "lifetime" && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase tracking-wider">
+                  Lifetime Plan
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -76,14 +154,18 @@ export function SettingsTab({ session }: { session: Session }) {
         <div className="space-y-2">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Daily Syncs</span>
-            <span className="text-white font-medium">{dailySyncs} / {syncLimit}</span>
+            <span className="text-white font-medium">
+              {tier === "free" ? `${dailySyncs} / ${syncLimit}` : `${dailySyncs} (Unlimited)`}
+            </span>
           </div>
-          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary rounded-full transition-all duration-500" 
-              style={{ width: `${Math.min((dailySyncs / syncLimit) * 100, 100)}%` }} 
-            />
-          </div>
+          {tier === "free" && (
+            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary rounded-full transition-all duration-500" 
+                style={{ width: `${Math.min((dailySyncs / syncLimit) * 100, 100)}%` }} 
+              />
+            </div>
+          )}
         </div>
 
         {/* Toggles */}
@@ -105,23 +187,107 @@ export function SettingsTab({ session }: { session: Session }) {
           </div>
         </div>
 
-        {/* Pro Upgrade */}
-        <button className="w-full p-4 bg-gradient-to-br from-primary to-purple-600 rounded-2xl text-left relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-1">
-              <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-              <h3 className="font-bold text-sm">Upgrade to Pro</h3>
-            </div>
-            <p className="text-[11px] text-white/80 pr-12">
-              Unlimited syncs, E2E encryption, and custom device names.
-            </p>
+        {/* Dynamic License Card */}
+        {tier === "free" ? (
+          <div className="space-y-3">
+            {!isActivating ? (
+              <button 
+                onClick={() => setIsActivating(true)}
+                className="w-full p-4 bg-gradient-to-br from-primary to-purple-600 rounded-2xl text-left relative overflow-hidden group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                    <h3 className="font-bold text-sm text-white">Upgrade to Pro</h3>
+                  </div>
+                  <p className="text-[11px] text-white/80 pr-12">
+                    Unlimited syncs, E2E encryption, and custom device names.
+                  </p>
+                </div>
+                <ArrowUpRight className="absolute right-4 top-4 w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
+              </button>
+            ) : (
+              <div className="p-4 bg-dark-lighter border border-white/10 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-primary" />
+                    <span className="font-mono text-xs text-primary font-bold">// activate key</span>
+                  </div>
+                  <button 
+                    onClick={() => { setIsActivating(false); setActivationStatus("idle"); }}
+                    className="text-xs text-gray-500 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                {activationStatus === "success" ? (
+                  <div className="flex items-center gap-2 text-xs text-green font-semibold py-2">
+                    <Check className="w-4 h-4" /> Account upgraded successfully!
+                  </div>
+                ) : (
+                  <form onSubmit={handleActivateKey} className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="CS-INVITE-XXXX-XXXX"
+                      value={activationKey}
+                      onChange={(e) => setActivationKey(e.target.value.toUpperCase())}
+                      className="w-full bg-dark border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-primary"
+                      disabled={activationStatus === "loading"}
+                      required
+                    />
+
+                    {activationStatus === "error" && (
+                      <p className="text-[10px] text-red-500 font-semibold leading-relaxed">
+                        {activationError}
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={activationStatus === "loading"}
+                      className="w-full py-2 bg-primary text-black font-semibold text-xs rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      {activationStatus === "loading" ? (
+                        <>
+                          <RefreshCwIcon className="w-3 h-3 animate-spin" />
+                          Activating...
+                        </>
+                      ) : (
+                        "Redeem Code"
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
           </div>
-          <ArrowUpRight className="absolute right-4 top-4 w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
-        </button>
+        ) : (
+          <div className="p-4 bg-dark-lighter border border-white/5 rounded-2xl flex items-center gap-3">
+            {tier === "pro" ? (
+              <Zap className="w-5 h-5 text-primary shrink-0" />
+            ) : (
+              <Shield className="w-5 h-5 text-purple-400 shrink-0" />
+            )}
+            <div>
+              <h4 className="text-xs font-bold text-white">
+                {tier === "pro" ? "Pro Subscription Active" : "Lifetime Access Active"}
+              </h4>
+              <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">
+                {tier === "pro" 
+                  ? "Enjoy unlimited syncing, up to 10 devices, and 90-day history retention."
+                  : "Enjoy unlimited syncing, unlimited devices, and 90-day history retention! Thanks for being a founding developer."}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Secondary Actions */}
         <div className="space-y-1 pt-2">
-          <button className="w-full flex items-center justify-between p-3 text-gray-400 hover:text-white transition-colors text-sm">
+          <button 
+            onClick={() => chrome.tabs.create({ url: "https://clipstream.dev/privacy" })}
+            className="w-full flex items-center justify-between p-3 text-gray-400 hover:text-white transition-colors text-sm"
+          >
             <div className="flex items-center gap-3">
               <Shield className="w-4 h-4" />
               <span>Security & Privacy</span>

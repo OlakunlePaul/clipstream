@@ -1,102 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Colors - Ocean Depth Palette */
-  --color-bg-base: #05050a;
-  --color-bg-surface: #0d0d14;
-  --color-bg-elevated: #13131e;
-  --color-bg-glass: rgba(255, 255, 255, 0.04);
+  --color-bg: #0d0e0f;
+  --color-bg2: #161819;
+  --color-bg3: #1e2022;
+  --color-border: #2a2d30;
+  --color-border2: #353a3e;
+  --color-text: #e8eaec;
+  --color-muted: #7a8490;
+  --color-accent: #00d68f;
+  --color-blue: #0099ff;
+  --color-amber: #f5a623;
+  --color-purple: #9b7ff4;
+  --color-red: #ff5f5f;
 
-  --color-border-default: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --radius-custom: 10px;
 
-  --color-text-primary: #f0f0ff;
-  --color-text-secondary: #a0a0c0;
-  --color-text-muted: #5a5a80;
-
-  --color-accent: #2563eb;
-  --color-accent-secondary: #0891b2;
-  --color-accent-glow: rgba(37, 99, 235, 0.35);
-
-  /* Typography */
-  --font-display: "Bricolage Grotesque", sans-serif;
-  --font-body: "DM Sans", sans-serif;
-
-  /* Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-
-  /* Shadows */
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
-  --shadow-glow: 0 0 40px var(--color-accent-glow);
+  --font-mono: var(--font-ibm-plex-mono);
+  --font-sans: var(--font-dm-sans);
 }
 
 :root {
-  --background: var(--color-bg-base);
-  --foreground: var(--color-text-primary);
+  --bg: #0d0e0f;
+  --bg2: #161819;
+  --bg3: #1e2022;
+  --border: #2a2d30;
+  --border2: #353a3e;
+  --text: #e8eaec;
+  --muted: #7a8490;
+  --accent: #00d68f;
+  --blue: #0099ff;
+  --amber: #f5a623;
+  --purple: #9b7ff4;
+  --red: #ff5f5f;
+  --radius: 10px;
 }
 
 @layer base {
   * {
-    border-color: var(--color-border-default);
+    border-color: var(--border);
   }
-  
+
   body {
-    background-color: var(--color-bg-base);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
-    letter-spacing: -0.02em;
-  }
-}
-
-@utility glass {
-  background: var(--color-bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-glass);
-}
-
-@layer components {
-  .glass-card {
-    @apply glass rounded-lg p-6 relative overflow-hidden;
-  }
-
-  /* Top-edge specular highlight */
-  .glass-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  }
-
-  .glow-btn {
-    @apply relative px-6 py-3 rounded-md font-semibold text-white transition-all duration-200;
-    background: var(--color-accent);
-    box-shadow: 0 0 20px var(--color-accent-glow), 0 1px 0 rgba(255,255,255,0.1) inset;
-  }
-  
-  .glow-btn:hover {
-    box-shadow: 0 0 40px var(--color-accent-glow), 0 1px 0 rgba(255,255,255,0.1) inset;
-    transform: translateY(-1px);
-    filter: brightness(1.1);
-  }
-  
-  .glow-btn:active {
-    transform: translateY(0);
   }
 }
 
